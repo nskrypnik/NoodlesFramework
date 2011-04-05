@@ -2,7 +2,7 @@ from gevent import monkey
 monkey.patch_all()
 
 # Gevent-socketio lib
-from socketio import SocketIOServer
+from websocket.server import WebSocketServer
 from noodles.http import Request, Response
 from noodles.dispatcher import Dispatcher
 from config import URL_RESOLVER, CONTROLLERS
@@ -38,4 +38,4 @@ def startapp():
     except ImportError:
         PORT = 8088 # By defaultl 8088 debug port
     print 'Start server on %i...' % PORT
-    SocketIOServer(('', PORT), noodlesapp, resource='socket.io').serve_forever()
+    WebSocketServer(('', PORT), noodlesapp).serve_forever()

@@ -58,7 +58,11 @@ class WebSocket():
     
     def __call__(self, env, start_response):
         start_response('200 OK',[('Content-Type','application/json')])
-        ws = env.get('socketio')
+        #print env
+        get_websocket = env.get('wsgi.get_websocket')
+        print get_websocket
+        ws = get_websocket()
+        ws.do_handshake()
         # TODO: create Error object
         if not ws: raise Exception('No server socket instance!')
         self.handler(ws)

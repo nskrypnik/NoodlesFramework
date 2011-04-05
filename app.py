@@ -19,7 +19,7 @@ dispatcher = Dispatcher(mapper=resolver.get_map(),
 # Our start point WSGI application
 def noodlesapp(env, start_response):
     # Get request object
-    request = Request(env, start_response)
+    request = Request(env)
     print "Try to handle url_path '%s'" % request.path
     # Get callable object with routine method to handle request
     callable_obj = dispatcher.get_callable(request)

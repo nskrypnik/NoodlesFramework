@@ -5,8 +5,8 @@ import json
 
 class Request(webob.Request):
     " Request object wrapper fo adding session handling and other features "
-    def __init__(self, env, start_response):
-        super(Request, self).__init__(env, start_response)
+    def __init__(self, env):
+        super(Request, self).__init__(env)
 
 class BaseResponse(webob.Response):
     " Just wrapper, may be implemnt cookies there, may be somthing else )) "

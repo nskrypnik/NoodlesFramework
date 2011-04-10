@@ -21,7 +21,7 @@ dispatcher = Dispatcher(mapper=resolver.get_map(),
 def noodlesapp(env, start_response):
     # Get request object
     request = Request(env)
-    print "Try to handle url_path '%s'" % request.path
+    #print "Try to handle url_path '%s'" % request.path
     # Get callable object with routine method to handle request
     callable_obj = dispatcher.get_callable(request)
     if not callable_obj:

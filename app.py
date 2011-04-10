@@ -1,4 +1,5 @@
 from gevent import monkey
+from gevent.wsgi import WSGIServer
 monkey.patch_all()
 
 # Gevent-socketio lib
@@ -39,3 +40,4 @@ def startapp():
         PORT = 8088 # By defaultl 8088 debug port
     print 'Start server on %i...' % PORT
     WebSocketServer(('', PORT), noodlesapp).serve_forever()
+    #WSGIServer(('', PORT), noodlesapp).serve_forever()

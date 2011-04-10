@@ -10,6 +10,7 @@ MIME_TYPES = {
     '.swf': 'application/x-shockwave-flash',
     
     # Text types
+    '.gz':'application/x-tar',
     '.js': 'text/javascript',
     '.css': 'text/css',
     '.html': 'text/html',

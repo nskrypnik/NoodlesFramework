@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from gevent import monkey
 from gevent.wsgi import WSGIServer
 monkey.patch_all()
@@ -7,6 +8,7 @@ from websocket.server import WebSocketServer
 from noodles.http import Request, Response
 from noodles.dispatcher import Dispatcher
 from config import URL_RESOLVER, CONTROLLERS
+import rediswrap
 
 #import zmqenv
 

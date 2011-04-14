@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Module for extending webob Request and Response classes
 # to use in our server application
 import webob
@@ -53,19 +54,20 @@ class WebSocket():
         Get an function f parameter. f is function that get an
         server socket instance ws and handle data from it
     """
-    def __init__(self, f):
+    def __init__(self, f, *args, **kwargs):
         self.handler = f
+        self.args = args
+        self.kwargs = kwargs
     
     def __call__(self, env, start_response):
         start_response('200 OK',[('Content-Type','application/json')])
         #print env
         get_websocket = env.get('wsgi.get_websocket')
-        print get_websocket
         ws = get_websocket()
         ws.do_handshake()
         # TODO: create Error object
         if not ws: raise Exception('No server socket instance!')
-        self.handler(ws)
+        self.handler(ws, *self.args, **self.kwargs)
 
 # Specify decorator for ajax response controller functions
 # Usage:

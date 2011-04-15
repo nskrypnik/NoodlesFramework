@@ -8,7 +8,9 @@ from websocket.server import WebSocketServer
 from noodles.http import Request, Response
 from noodles.dispatcher import Dispatcher
 from config import URL_RESOLVER, CONTROLLERS
-import rediswrap
+import rediswrap, logging
+
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 #import zmqenv
 

@@ -3,6 +3,13 @@
 # to use in our server application
 import webob
 import json
+try:
+    from pymongo import json_util
+    def json_dumps(obj):
+        return json.dumps(obj, default = json_util.default)
+except ImportError:
+    def json_dumps(obj):
+        return json.dumps(obj)
 
 class Request(webob.Request):
     " Request object wrapper fo adding session handling and other features "
@@ -46,7 +53,7 @@ class XResponse(BaseResponse):
         self.status = 200 # 200 OK, it's default, but anyway...
         self.headerlist = [('Content-type', 'application/x-javascript')]
         self.charset = 'utf-8'
-        self.body = json.dumps(response_dict)
+        self.body = json_dumps(response_dict)
 
 class WebSocket():
     """

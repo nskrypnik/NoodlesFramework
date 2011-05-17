@@ -8,7 +8,7 @@ import os
 
 # Specify application lookup
 appLookup = TemplateLookup(directories=TEMPLATE_DIRS,
-                module_directory=MAKO_TMP_DIR, output_encoding='utf-8')
+                module_directory=MAKO_TMP_DIR, output_encoding='utf-8', input_encoding='utf-8')
 
 def render_to_response(templatename, context, request = None):
     if request:

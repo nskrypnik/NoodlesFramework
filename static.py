@@ -28,6 +28,7 @@ MIME_TYPES = {
     }
 
 def index(request, path_info):
+    path_info = path_info.replace('%28', '(').replace('%29', ')').replace('%20', ' ')
     response = BaseResponse()
     # define a file extansion
     base, ext = os.path.splitext(path_info) # Get the file extansion

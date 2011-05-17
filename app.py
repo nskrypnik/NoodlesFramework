@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from gevent import monkey
+from gevent.wsgi import WSGIServer
 monkey.patch_all()
 
 # Gevent-socketio lib
-from websocket.server import WebSocketServer
+from websocket import server
+
 from noodles.http import Request, Response
 from noodles.dispatcher import Dispatcher
 from config import URL_RESOLVER, CONTROLLERS
@@ -43,4 +45,5 @@ def startapp():
     except ImportError:
         PORT = 8088 # By defaultl 8088 debug port
     print 'Start server on %i...' % PORT
-    WebSocketServer(('', PORT), noodlesapp).serve_forever()
+    server.WebsocketServer(('', PORT), noodlesapp).serve_forever()
+    #WSGIServer(('', PORT), noodlesapp).serve_forever()

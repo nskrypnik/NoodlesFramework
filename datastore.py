@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re, logging, copy
+import redis
 
 non_record = re.compile(r'__\w+__')
 
@@ -11,6 +12,15 @@ class Model(object):
     
     def __init__(self, valuedict=None, embedded=False, **kwargs):
         classname = self.__class__.__name__
+        self.__init_structure__(classname, valuedict, embedded, **kwargs)
+        
+        storage = kwargs.get('storage')
+        if not storage: self.storage = 'redis'
+        
+        self.id = None 
+        
+        
+    def __init_structure__(self, classname, valuedict=None, embedded=False, **kwargs):
         # create dictionary for model instance
         self.__instdict__ = {}
         # Check static model structure
@@ -40,6 +50,7 @@ class Model(object):
                     self.__instdict__[k] = kwargs[k]
             else:
                 raise Exception('There is no such value \'%s\' in %s model.' % (k, classname))
+        
     
     def get_structure(self):
         classname = self.__class__.__name__
@@ -88,6 +99,9 @@ class Value(object):
     def __set__(self, instance, value):
         valuedict = instance.__instdict__
         valuedict[self.key] = self.type(value)
+
+class Index(Value):
+    pass
     
 class Node(Value):
     " Use it for embedd objects to model "

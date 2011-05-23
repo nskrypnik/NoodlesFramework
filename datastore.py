@@ -58,7 +58,7 @@ class Model(object):
         #self.id = None
         self.embedded = embedded
         self.save_routines = {'redis': self.save_redis, 'mongo': self.save_mongo}
-        
+        #self.load_routines = {'redis': self.load_redis, 'mongo': self.load_mongo}
     
     def __init_structure__(self, classname, valuedict=None, **kwargs):
         # create dictionary for model instance
@@ -92,6 +92,9 @@ class Model(object):
                 raise Exception('There is no such value \'%s\' in %s model.' % (k, classname))
     
     def save(self, storage = None):
+        if self.embedded:
+            logging.warning('You should save embedded objects with high level object')
+            return
         if not storage: storage = self.storage
         save_to_storage = self.save_routines.get(storage)
         if save_to_storage: save_to_storage()
@@ -129,9 +132,58 @@ class Model(object):
     
     def get_values(self):
         return copy.deepcopy(self.__instdict__)
+    
+    @classmethod
+    def get(cls, **kwargs):
+        " Get one instance from storage"
+        storage = kwargs.get('storage')
+        if not storage: storage = self.storage
         
-    def load(self):
+        if storage == "redis":
+            if kwargs.has_key('id'):
+                return cls.get_redis(kwargs['id'])
+            else:
+                 raise Exception('Current storage is redis, so you must search by id key')   
+        elif storage == "mongo":
+            pass
+        #load_from_storage = self.load_routines.get(storage)
+        #if load_from_storage: load_from_storage(**kwargs)
+        #else:
+        #    raise Exception('Load model data. No such storage')
+    
+    @classmethod
+    def load_redis_recursive(cls, instance_dict, obj_key):
+        for k in instance_dict:
+            if type(instance_dict[k]) != dict:
+                instance_dict[k] = REDIS_CONN.get(':'.join([obj_key, k]))
+            else:
+                cls.load_redis_recursive(instance_dict[k], ':'.join([obj_key, k]))
+                
+    
+    @classmethod
+    def get_redis(cls, id):
+        "Get object from Redis storage by ID"
+        # First try to find object by Id
+        new_inst = cls()
+        inst_id = REDIS_CONN.get(':'.join([new_inst.collection_name, str(id), 'id']))
+        if not inst_id: # No objects with such ID
+            raise
+        else:
+            obj_key = ':'.join([new_inst.collection_name, str(id)])
+            cls.load_redis_recursive(new_inst.__instdict__, obj_key)
+            return new_inst
+        
+        
+    def load(self, **kwargs):
         pass
+        
+    def load_redis(**kwargs):
+        
+        pass
+
+    def load_mongo(self):
+        pass
+
     
 class Node(Value):
     " Use it for embedd objects to model "

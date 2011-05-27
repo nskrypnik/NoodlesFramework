@@ -143,7 +143,8 @@ class Model(object):
             if kwargs.has_key('id'):
                 return cls.get_redis(kwargs['id'])
             else:
-                 raise Exception('Current storage is redis, so you must search by id key')   
+                 #raise Exception('Current storage is redis, so you must search by id key')
+                 return None
         elif storage == "mongo":
             pass
         #load_from_storage = self.load_routines.get(storage)

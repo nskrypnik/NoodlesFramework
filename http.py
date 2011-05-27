@@ -3,6 +3,11 @@
 # to use in our server application
 import webob
 import json
+import logging
+
+SET_COOKIES = '__set_cookies'
+UNSET_COOKIES = '__unset_cookies'
+
 try:
     from pymongo import json_util
     def json_dumps(obj):
@@ -53,6 +58,26 @@ class XResponse(BaseResponse):
         self.status = 200 # 200 OK, it's default, but anyway...
         self.headerlist = [('Content-type', 'application/x-javascript')]
         self.charset = 'utf-8'
+        
+        # Set and unset cookies
+        # Set cookies
+        set_cookies_dict = response_dict.get(SET_COOKIES)
+        logging.debug('response_dict is %s. Set-cookies dict is %s' % (response_dict, set_cookies_dict))
+        if set_cookies_dict:
+            for cookie in set_cookies_dict:
+                logging.debug('Try to set cookie %s to value %i' % (cookie, set_cookies_dict[cookie]))
+                self.set_cookie(cookie, str(set_cookies_dict[cookie]))
+            response_dict.pop(SET_COOKIES)
+        
+        # Unset cookies
+        unset_cookies_dict = response_dict.get(UNSET_COOKIES)
+        if unset_cookies_dict:
+            for cookie in unset_cookies_dict:
+                self.delete_cookie(cookie)
+            response_dict.pop(UNSET_COOKIES)
+        
+        
+        
         self.body = json_dumps(response_dict)
 
 class WebSocket():

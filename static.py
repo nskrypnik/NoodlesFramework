@@ -22,6 +22,10 @@ MIME_TYPES = {
     '.png': 'image/png',
     '.tiff': 'image/tiff',
     
+    # Sound files
+    
+    'wav': 'audio/x-wav',
+    
     # And much more...
     # Add mime types from this source http://en.wikipedia.org/wiki/Internet_media_type
     # Thank you Jimmy

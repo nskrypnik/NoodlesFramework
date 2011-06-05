@@ -122,13 +122,23 @@ class Model(object):
     def save_mongo(self):
         pass
     
-    def get_structure(self):
-        classname = self.__class__.__name__
-        return self.__structure__.get(classname)
+    @classmethod
+    def get_structure(cls):
+        structure = cls.__structure__.get(cls.__name__)
+        if not structure:
+            # Structure of the class is not created yet
+            cls_inst = cls()
+            return cls.__structure__.get(cls.__name__)
+        return structure
     
-    def get_collection_name(self):
-        classname = self.__class__.__name__
-        return self.__collection__[classname]
+    @classmethod
+    def get_collection_name(cls):
+        classname = cls.__name__
+        collection_name = cls.__collection__.get(classname)
+        if not collection_name:
+            cls.__collection__[classname] = classname.lower() + 's'
+            return cls.__collection__[classname]
+        return collection_name
     
     def get_values(self):
         return copy.deepcopy(self.__instdict__)
@@ -165,14 +175,17 @@ class Model(object):
     def get_redis(cls, id):
         "Get object from Redis storage by ID"
         # First try to find object by Id
-        new_inst = cls()
-        inst_id = REDIS_CONN.get(':'.join([new_inst.collection_name, str(id), 'id']))
+        inst_id = REDIS_CONN.get(':'.join([cls.get_collection_name(), str(id), 'id']))
         if not inst_id: # No objects with such ID
             raise
         else:
-            obj_key = ':'.join([new_inst.collection_name, str(id)])
-            cls.load_redis_recursive(new_inst.__instdict__, obj_key)
-            return new_inst
+            # Copy structure of Class to new dictionary
+            instance_dict = copy.deepcopy(cls.get_structure())
+            obj_key = ':'.join([cls.get_collection_name(), str(id)])
+            # Fullfill instance dictionary by values from Redis storage
+            cls.load_redis_recursive(instance_dict, obj_key)
+            # return class instance with values is instance_dict
+            return cls(valuedict = instance_dict)
         
         
     def load(self, **kwargs):

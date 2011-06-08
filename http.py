@@ -113,3 +113,8 @@ def ajax_response(func):
         resp_dict = func(**kwargs)
         return XResponse(resp_dict)
     return gen
+
+def websocket(func):
+    def gen(request, *args, **kwargs):
+        return WebSocket(func, *args, **kwargs)
+    return gen

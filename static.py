@@ -24,7 +24,7 @@ MIME_TYPES = {
     
     # Sound files
     
-    'wav': 'audio/x-wav',
+    '.wav': 'audio/x-wav',
     
     # And much more...
     # Add mime types from this source http://en.wikipedia.org/wiki/Internet_media_type
@@ -37,7 +37,7 @@ def index(request, path_info):
     # define a file extansion
     base, ext = os.path.splitext(path_info) # Get the file extansion
     mime_type = MIME_TYPES.get(ext)
-    if not mime_type: raise Exception("unknown doc, or something like that :-P")
+    if not mime_type: raise Exception("unknown doc, or something like that :-P: %s" % ext	)
     static_file_path = os.path.join(STATIC_ROOT, path_info)
     # Check if this path exists
     print 'static_file_path:', static_file_path

@@ -25,6 +25,7 @@ MIME_TYPES = {
     # Sound files
     
     '.wav': 'audio/x-wav',
+    '.mp3': 'audio/mpeg',
     
     # And much more...
     # Add mime types from this source http://en.wikipedia.org/wiki/Internet_media_type

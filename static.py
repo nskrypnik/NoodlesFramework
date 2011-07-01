@@ -28,6 +28,7 @@ MIME_TYPES = {
     
     '.wav': 'audio/x-wav',
     '.mp3': 'audio/mpeg',
+    '.ogg': 'audio/ogg',
     
     # And much more...
     # Add mime types from this source http://en.wikipedia.org/wiki/Internet_media_type
@@ -62,8 +63,6 @@ def index(request, path_info):
     request_range = request.headers.get('Range')
     if request_range:
         range_bytes = request_range.replace('bytes=', '')
-        logging.debug('================================== %s =========================================================' % path_info)
-        logging.debug('range_bytes %s' % range_bytes)
         range_bytes = range_bytes.split('-')
         if len(range_bytes) > 2: raise Exception('Wrong http Range parameter "%s"' % request_range)
         content_offset = toInt(range_bytes[0])
@@ -83,8 +82,6 @@ def index(request, path_info):
         response.headerlist = [('Content-type', mime_type), 
         ('Content-Range', 'bytes %i-%i/%i' % (content_offset, content_end, len(static_content)))]
         
-        logging.debug('Headers %s' % response.headerlist.__repr__())
-        logging.debug('------------------------------------------------------------------------------------------------------')
     else:
         response.headerlist = [('Content-type', mime_type)]
 

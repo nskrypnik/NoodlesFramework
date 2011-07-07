@@ -68,7 +68,10 @@ class WSSession(object):
     
     def __getattr__(self, name):
         " If we try to access to some property isn't existed, returns None"
-        return None    
+        return None
+    
+    def __setattr__(self, name, value):
+        self.__dict__.update({name: value})    
 
 class WSServelet(object):
     " Instance that serves web socket connection with client "

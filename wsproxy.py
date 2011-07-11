@@ -41,6 +41,18 @@ class WSSession(object):
         self.greenlets = {} # The dictionary that storages all greenlets associated with this session
         # except of input/output servelet handlers and main servelet function
         self.terminators = {} # list of functions for execute while session is terminating
+    
+    def add_terminator(self, func):
+        "Add terminator function to session terminators scope"
+        self.terminators[func.__name__] = func
+    
+    def rm_terminator(self, func):
+        "Remove function from list of terminator functions"
+        try:
+            self.terminators.pop(func.__name__)
+        except KeyError:
+            # Just in case, but it's not an critical error
+            logging.warning('Try to delete from WS session empty terminator')
         
     def tosend(self, chid, data):
         " Provide ability to send data through websocket by chid "

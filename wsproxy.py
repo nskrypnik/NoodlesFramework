@@ -9,11 +9,18 @@ import json
 from noodles.http import websocket
 from gevent.queue import Queue
 from gevent.event import Event
-from config import CHANNEL_HANDLERS_TABLE
+from gevent.coros import Semaphore
+from noodles.redisconn import RedisConn
+try:
+    from config import CHANNEL_HANDLERS_TABLE
+except ImportError:
+    CHANNEL_HANDLERS_TABLE = {}
+    
 try:
     from config import ECHO_CHID
 except:
     ECHO_CHID = 101 # default Echo channel id
+
 try:
     from config import ERROR_CHID
 except:
@@ -35,12 +42,23 @@ class WSSession(object):
         interface to send data through web socket
     """
     
+    _collection = {}
+    
+    @classmethod
+    def get_session(cls, id):
+        "Gets alive Web Session object by id or returns None if session isn't active"
+        return cls._collection.get(id)
+    
     def __init__(self):
+        # Get id for web-socket session
+        self.id = RedisConn.incr( "".join( [self.__class__.__name__, '_ids'] ) )
         self.output_queue = Queue()
-        self.params = {} # Session specific parameters
+        self.params = {'wssid': self.id} # Session specific parameters
         self.greenlets = {} # The dictionary that storages all greenlets associated with this session
         # except of input/output servelet handlers and main servelet function
         self.terminators = {} # list of functions for execute while session is terminating
+        self._collection[self.id] = self
+        self.semaphore = Semaphore() # use it concurent data access conditions
     
     def add_terminator(self, func):
         "Add terminator function to session terminators scope"
@@ -75,8 +93,11 @@ class WSSession(object):
             gevent.kill(green)
     
     def terminate(self):
+        self.kill_greenlets()
         for t in self.terminators.values():
             t(self)
+        self._collection.pop(self.id)
+        
     
     def __getattr__(self, name):
         " If we try to access to some property isn't existed, returns None"
@@ -110,7 +131,7 @@ class WSServelet(object):
             handler = self.channel_handlers.get(chid)
             if handler:
                 if hasattr(handler, 'handler_class'):
-                    handler(chid, self.sess, data['pkg'])() # call channel handler
+                    handler(chid, self.sess)(data['pkg']) # call channel handler
                 else:
                     handler(chid, self.sess, data['pkg']) # Launch oldstyle handler
             else:   
@@ -163,7 +184,6 @@ class WSServelet(object):
         o = gevent.spawn(self.output_handler)
         self.terminate_event.wait()
         # Terminate servelet and all greenlets
-        self.sess.kill_greenlets()
         gevent.kill(i); gevent.kill(o)
         self.sess.terminate()
 

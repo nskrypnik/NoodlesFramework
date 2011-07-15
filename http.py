@@ -8,14 +8,6 @@ import logging
 SET_COOKIES = '__set_cookies'
 UNSET_COOKIES = '__unset_cookies'
 
-try:
-    from pymongo import json_util
-    def json_dumps(obj):
-        return json.dumps(obj, default = json_util.default)
-except ImportError:
-    def json_dumps(obj):
-        return json.dumps(obj)
-
 class Request(webob.Request):
     " Request object wrapper fo adding session handling and other features "
     def __init__(self, env):

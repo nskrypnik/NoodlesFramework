@@ -1,5 +1,8 @@
 " Implement dispatch logic "
 from noodles.http import Response
+import sys
+
+sys.path.append('./controllers')
 
 class CallWrapper(object):
     def __init__(self, controller, action, extra_args):
@@ -25,7 +28,8 @@ class Dispatcher(object):
         for controller in controllers:
             # TODO: Enhance import logic here to import controllers like mod1.mod2
             # Import all controllers
-            mod = __import__(controller, globals(), locals())
+            __import__(controller, globals(), locals())
+            mod = sys.modules[controller]
             self.controllers[controller] = mod
 
     def get_callable(self, request):

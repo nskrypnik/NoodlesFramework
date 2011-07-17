@@ -34,8 +34,8 @@ def noodlesapp(env, start_response):
     if not callable_obj:
         # May be here an error,raise exception
         raise Exception('Can\'t find callable for this url path')
-    # Callable function must return Respone
-    callable_obj = SessionMiddleware(callable_obj) # Hardcoded use of Session middleware
+    # Callable function must return Respone object
+    callable_obj = SessionMiddleware(callable_obj) # Hardcoded use of HTTP Session middleware
     response = callable_obj()
 
     return response(env, start_response)

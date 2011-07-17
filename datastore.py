@@ -147,7 +147,7 @@ class Model(object):
     def get(cls, **kwargs):
         " Get one instance from storage"
         storage = kwargs.get('storage')
-        if not storage: storage = self.storage
+        if not storage: storage = 'redis'
         
         if storage == "redis":
             if kwargs.has_key('id'):

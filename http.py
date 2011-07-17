@@ -15,7 +15,7 @@ class Request(webob.Request):
 
 class BaseResponse(webob.Response):
     " Just wrapper, may be implemnt cookies there, may be somthing else )) "
-    pass
+    is_noodles_response = True # for check if it really noodles response
 
 class Response(BaseResponse):
     " Simple response class with 200 http header status "

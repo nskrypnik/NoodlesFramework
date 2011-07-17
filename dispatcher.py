@@ -4,7 +4,6 @@ from noodles.http import Response
 class CallWrapper(object):
     def __init__(self, controller, action, extra_args):
         self.extra_args = extra_args
-        self.request = extra_args['request']
         try:
             self.action = getattr(controller, action)
         except AttributeError:

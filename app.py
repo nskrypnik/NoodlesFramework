@@ -47,5 +47,7 @@ def startapp():
     except ImportError:
         PORT = 8088 # By defaultl 8088 debug port
     print 'Start server on %i...' % PORT
-    server.WebSocketServer(('', PORT), noodlesapp).serve_forever()
+    if hasattr(server,'WebSocketServer'): atr = 'WebSocketServer'
+    else: atr='WebsocketServer'
+    getattr(server,atr)(('', PORT), noodlesapp).serve_forever()
     #WSGIServer(('', PORT), noodlesapp).serve_forever()

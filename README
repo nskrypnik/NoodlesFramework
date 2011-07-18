@@ -1,0 +1,18 @@
+This is our small web-framework, based on gevents(gevents.org).
+
+To start work with it clone it to noodles directory
+
+$ cd noodles_project_dir
+$ git clone git@github.com:guyromm/NoodlesFramework.git noodles
+
+To start new project do:
+
+$ python noodles/manage.py init
+$ python runserver.py
+
+Fail? Just install all necessary libs:
+
+redis-py, webob, routes, mako, gevent, websocket(https://bitbucket.org/denis/websocket)
+
+For more detail info see INSTALL...
+

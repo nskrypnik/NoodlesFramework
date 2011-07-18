@@ -8,7 +8,7 @@ from websocket import server
 
 from noodles.http import Request, Response
 from noodles.dispatcher import Dispatcher
-from noodles.session import SessionMiddleware 
+from noodles.session import SessionMiddleware
 from config import URL_RESOLVER, CONTROLLERS
 import rediswrap
 import logging

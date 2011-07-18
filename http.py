@@ -70,7 +70,7 @@ class XResponse(BaseResponse):
         
         
         
-        self.body = json_dumps(response_dict)
+        self.body = json.dumps(response_dict)
 
 class WebSocket():
     """

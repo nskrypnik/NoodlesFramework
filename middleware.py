@@ -16,6 +16,7 @@ class AppMiddlewares(list):
     def __init__(self, MIDDLEWARES):
         "Give MIDDLEWARES - raw list of middlewares and stores dict of classes itself" 
         super(AppMiddlewares, self).__init__()
+        MIDDLEWARES.reverse()
         for middleware_path in MIDDLEWARES:
             middleware_class_name = middleware_path.split('.')[-1]
             middleware_module = middleware_path.split('.')[:-1]

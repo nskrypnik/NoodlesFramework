@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
+
+from noodles.redisconn import RedisConn
+
 import re, logging, copy
-import redis
+import json
 
 non_record = re.compile(r'__\w+__')
 
-REDIS_CONN = redis.Redis()
+class DoesNotExist(Exception):
+    pass
 
 class Value(object):
     "Single value in our data storage"
@@ -37,6 +41,10 @@ class Value(object):
         valuedict[self.key] = self.type(value)
 
 
+class DateValue(Value):
+    "Represents datatime python object"
+    pass
+
 class Model(object):
     " General class for objects description in data storage "
     # static model parameters
@@ -46,19 +54,10 @@ class Model(object):
     id = Value(int)
     
     def __init__(self, valuedict=None, embedded=False, **kwargs):
-        classname = self.__class__.__name__
-        
+        classname = self.__class__.__name__        
         self.__init_structure__(classname, valuedict, **kwargs)
-        
-        self.collection_name = self.__collection__[classname]
-        
-        storage = kwargs.get('storage')
-        if not storage: self.storage = 'redis'
-        
-        #self.id = None
+        self.collection_name = self.__collection__[classname]        
         self.embedded = embedded
-        self.save_routines = {'redis': self.save_redis, 'mongo': self.save_mongo}
-        #self.load_routines = {'redis': self.load_redis, 'mongo': self.load_mongo}
     
     def __init_structure__(self, classname, valuedict=None, **kwargs):
         # create dictionary for model instance
@@ -92,36 +91,16 @@ class Model(object):
                 raise Exception('There is no such value \'%s\' in %s model.' % (k, classname))
     
     def save(self, storage = None):
+        " Save object to redis storage"
         if self.embedded:
             logging.warning('You should save embedded objects with high level object')
             return
-        if not storage: storage = self.storage
-        save_to_storage = self.save_routines.get(storage)
-        if save_to_storage: save_to_storage()
-        else:
-            raise Exception('Where is no such storage %s!' % storage)
-        
-    # Save to Redis storage
-    def save_redis(self):
-        " Save object to redis storage"
         if not self.id:
-            new_id = REDIS_CONN.incr(self.__class__.__name__.lower() + '_key')
+            new_id = RedisConn.incr(self.__class__.__name__.lower() + '_key')
             self.id = new_id
-        self.save_redis_recursive(':'.join([self.collection_name, str(self.id)]), self.__instdict__)
-                
-    def save_redis_recursive(self, redis_key, valuedict):
-        " Recursive save instance dictionary to Redis storage"
-        for k in valuedict:
-            if type(valuedict[k]) != dict:
-                curr_key = ':'.join([redis_key, k])
-                REDIS_CONN.set(curr_key, valuedict[k])
-            else:
-                self.save_redis_recursive(':'.join([redis_key, k]), valuedict[k])
-    
-    # Save to Mongo
-    def save_mongo(self):
-        pass
-    
+        RedisConn.set(':'.join([self.collection_name, str(self.id)]), json.dumps(self.__instdict__))
+        #self.save_redis_recursive(':'.join([self.collection_name, str(self.id)]), self.__instdict__)        
+                    
     @classmethod
     def get_structure(cls):
         structure = cls.__structure__.get(cls.__name__)
@@ -144,61 +123,19 @@ class Model(object):
         return copy.deepcopy(self.__instdict__)
     
     @classmethod
-    def get(cls, **kwargs):
-        " Get one instance from storage"
-        storage = kwargs.get('storage')
-        if not storage: storage = 'redis'
-        
-        if storage == "redis":
-            if kwargs.has_key('id'):
-                return cls.get_redis(kwargs['id'])
-            else:
-                 #raise Exception('Current storage is redis, so you must search by id key')
-                 return None
-        elif storage == "mongo":
-            pass
-        #load_from_storage = self.load_routines.get(storage)
-        #if load_from_storage: load_from_storage(**kwargs)
-        #else:
-        #    raise Exception('Load model data. No such storage')
-    
-    @classmethod
-    def load_redis_recursive(cls, instance_dict, obj_key):
-        for k in instance_dict:
-            if type(instance_dict[k]) != dict:
-                instance_dict[k] = REDIS_CONN.get(':'.join([obj_key, k]))
-            else:
-                cls.load_redis_recursive(instance_dict[k], ':'.join([obj_key, k]))
-                
-    
-    @classmethod
-    def get_redis(cls, id):
+    def get(cls, id):
         "Get object from Redis storage by ID"
         # First try to find object by Id
-        inst_id = REDIS_CONN.get(':'.join([cls.get_collection_name(), str(id), 'id']))
-        if not inst_id: # No objects with such ID
-            raise
+        #inst_id = RedisConn.get(':'.join([cls.get_collection_name(), str(id), 'id']))
+        inst_data = RedisConn.get(':'.join([cls.get_collection_name(), str(id)]))
+        if not inst_data: # No objects with such ID
+            raise DoesNotExist('No model in Redis srorage with such id')
         else:
             # Copy structure of Class to new dictionary
-            instance_dict = copy.deepcopy(cls.get_structure())
-            obj_key = ':'.join([cls.get_collection_name(), str(id)])
-            # Fullfill instance dictionary by values from Redis storage
-            cls.load_redis_recursive(instance_dict, obj_key)
-            # return class instance with values is instance_dict
+            instance_dict = json.loads(inst_data)
             return cls(valuedict = instance_dict)
-        
-        
-    def load(self, **kwargs):
-        pass
-        
-    def load_redis(**kwargs):
-        
-        pass
 
-    def load_mongo(self):
-        pass
-
-    
+      
 class Node(Value):
     " Use it for embedd objects to model "
     

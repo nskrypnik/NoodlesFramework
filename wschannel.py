@@ -7,13 +7,12 @@ class BaseChannelHandler(object):
     """
     handler_class = True
     
-    def __init__(self, chid, session, data):
+    def __init__(self, chid, session):
         if self.__class__.__name__ == 'BaseChannelHandler':
             raise NotImplemented('You shouldn\'t use this class directly')
         self.session = session
         self.chid = chid
-        self.data = data
-        self.op = data.get('op')
+        #self.op = data.get('op')
     
     def default(self):
         raise NotImplemented
@@ -22,13 +21,16 @@ class BaseChannelHandler(object):
         if not chid: chid = self.chid
         self.session.tosend(chid, data_to_send)
     
-    def __getattr__(self):
+    def __getattr__(self, name):
         return None
     
-    def __call__(self):
-        if self.op:
-            func = getattr(self, self.op)
-            if func: func()
+    def __call__(self, data = None):
+        op = data.get('op')
+        if op:
+            func = getattr(self, op)
+            if func: func(data)
+            else:
+                raise Exception('Unknown operation on channel')
         else:
-            self.default()
+            self.default(data)
         

@@ -8,6 +8,7 @@ from websocket import server
 
 from noodles.http import Request, Response
 from noodles.dispatcher import Dispatcher
+from noodles.session import SessionMiddleware 
 from config import URL_RESOLVER, CONTROLLERS
 import rediswrap
 import logging
@@ -33,7 +34,8 @@ def noodlesapp(env, start_response):
     if not callable_obj:
         # May be here an error,raise exception
         raise Exception('Can\'t find callable for this url path')
-    # Callable function must return Respone
+    # Callable function must return Respone object
+    callable_obj = SessionMiddleware(callable_obj) # Hardcoded use of HTTP Session middleware
     response = callable_obj()
 
     return response(env, start_response)

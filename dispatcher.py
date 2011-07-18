@@ -1,9 +1,14 @@
 " Implement dispatch logic "
 from noodles.http import Response
+import sys, os
+
+# Add standard controllers dir to PYTHON_PATH directory
+sys.path.append( os.path.join(os.path.dirname(__file__), 'controllers') )
 
 class CallWrapper(object):
     def __init__(self, controller, action, extra_args):
         self.extra_args = extra_args
+        self.request = self.extra_args['request'] # for middleware compatibility
         try:
             self.action = getattr(controller, action)
         except AttributeError:
@@ -25,7 +30,9 @@ class Dispatcher(object):
         for controller in controllers:
             # TODO: Enhance import logic here to import controllers like mod1.mod2
             # Import all controllers
-            mod = __import__(controller, globals(), locals())
+            base_mod = __import__(controller, globals(), locals())
+            mod = sys.modules.get(controller)
+            if not mod: mod = base_mod
             self.controllers[controller] = mod
 
     def get_callable(self, request):

@@ -8,14 +8,12 @@ from websocket import server
 
 from noodles.http import Request, Response
 from noodles.dispatcher import Dispatcher
-from noodles.session import SessionMiddleware
-from config import URL_RESOLVER, CONTROLLERS
+from noodles.middleware import AppMiddlewares
+from config import URL_RESOLVER, CONTROLLERS, MIDDLEWARES
 import rediswrap
 import logging
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-
-#import zmqenv
 
 resolver = __import__(URL_RESOLVER, globals(), locals())
 
@@ -23,6 +21,9 @@ resolver = __import__(URL_RESOLVER, globals(), locals())
 dispatcher = Dispatcher(mapper=resolver.get_map(),
                         controllers = CONTROLLERS
                       )
+
+# Load all midllewares for application
+app_middlewares = AppMiddlewares(MIDDLEWARES)
 
 # Our start point WSGI application
 def noodlesapp(env, start_response):
@@ -35,7 +36,8 @@ def noodlesapp(env, start_response):
         # May be here an error,raise exception
         raise Exception('Can\'t find callable for this url path')
     # Callable function must return Respone object
-    callable_obj = SessionMiddleware(callable_obj) # Hardcoded use of HTTP Session middleware
+    for middleware in app_middlewares:
+        callable_obj = middleware(callable_obj) # Hardcoded use of HTTP Session middleware
     response = callable_obj()
 
     return response(env, start_response)

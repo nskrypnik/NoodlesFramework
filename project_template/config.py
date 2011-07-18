@@ -30,3 +30,7 @@ TEMPLATE_DIRS = [
 # Specify here mako temporary dir for precompiled templates
 MAKO_TMP_DIR = os.path.join(APP_DIR, 'tmp/modules')
 
+MIDDLEWARES = [
+               # Specify list of middlewares used in your application here
+               #'session.SessionMiddleware', 
+               ]

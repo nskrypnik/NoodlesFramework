@@ -1,5 +1,5 @@
 " Implement dispatch logic "
-from noodles.http import Response
+from noodles.http import Error404
 import sys, os
 
 # Add standard controllers dir to PYTHON_PATH directory
@@ -58,7 +58,13 @@ class Dispatcher(object):
 
     def not_found(self, request):
         " Returns pair if url does'nt match any choice in mapper " 
-        def func():
-            " Genereate 404 server response here "
-            return Response('<h1>Error 404. Can\'t find page</h1>')
-        return func
+        class NotFoundCallable():
+            
+            def __init__(self, request):
+                self.request = request
+            
+            def __call__(self):
+                " Genereate 404 server response here "
+                return Error404('<h1>Error 404. Can\'t find page</h1>')
+        
+        return NotFoundCallable(request)

@@ -24,7 +24,7 @@ class Value(object):
     
     def typing(self, value):
         " If value is None it returns None, else value value in proper type"
-        if value: return self.type(value)
+        if value != None: return self.type(value)
         else: return None
     
     def get_default(self):
@@ -126,13 +126,12 @@ class Model(object):
     def get(cls, id, storage = None): # storage=None for backword capability 
         "Get object from Redis storage by ID"
         # First try to find object by Id
-        #inst_id = RedisConn.get(':'.join([cls.get_collection_name(), str(id), 'id']))
         inst_data = RedisConn.get(':'.join([cls.get_collection_name(), str(id)]))
         if not inst_data: # No objects with such ID
             raise DoesNotExist('No model in Redis srorage with such id')
         else:
             # Copy structure of Class to new dictionary
-            instance_dict = json.loads(inst_data)
+            instance_dict = json.loads(inst_data.__str__())
             return cls(valuedict = instance_dict)
 
       
@@ -155,6 +154,5 @@ class Node(Value):
     
     def get_default(self):
         model_inst = self.model()
-        print self.model
         return model_inst.get_structure()
 

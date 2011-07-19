@@ -6,12 +6,15 @@ monkey.patch_all()
 # Gevent-socketio lib
 from websocket import server
 
-from noodles.http import Request, Response
+from noodles.http import Request, Response, DebugError500
 from noodles.dispatcher import Dispatcher
 from noodles.middleware import AppMiddlewares
-from config import URL_RESOLVER, CONTROLLERS, MIDDLEWARES
+from config import URL_RESOLVER, CONTROLLERS, MIDDLEWARES, DEBUG
+
 import rediswrap
 import logging
+import traceback
+import sys
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
@@ -38,10 +41,18 @@ def noodlesapp(env, start_response):
     # Callable function must return Respone object
     for middleware in app_middlewares:
         callable_obj = middleware(callable_obj) # Hardcoded use of HTTP Session middleware
-    response = callable_obj()
-
+    
+    try:
+        response = callable_obj()
+    # Capture traceback here and send it if debug mode
+    except Exception as e:
+        if DEBUG:
+            f = logging.Formatter()
+            traceback = f.formatException(sys.exc_info())
+            response = DebugError500(e, traceback)
+        #TODO: write production Error500 response
+            
     return response(env, start_response)
-
 # Start server function, you may specify port number here
 def startapp():
     try:

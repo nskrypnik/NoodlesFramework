@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 # Module for extending webob Request and Response classes
 # to use in our server application
+
+from mako.template import Template
+
 import webob
 import json
 import logging
+
 
 SET_COOKIES = '__set_cookies'
 UNSET_COOKIES = '__unset_cookies'
@@ -41,6 +45,27 @@ class Error404(BaseResponse):
         self.headerlist = [('Content-type', 'text/html')]
         self.charset = 'utf-8'
         self.body = error_body
+        
+class DebugError500(BaseResponse):
+    "HTTP 500 error response with server traceback"
+    def __init__(self, ex, tb):
+        super(DebugError500, self).__init__()
+        self.status = 500
+        self.headerlist = [('Content-type', 'text/html')]
+        self.charset = 'utf-8'
+        tb = '<br />'.join(tb.split('\n'))
+        error_500_template = """
+                            <h1>Internal Noodles error</h1>
+                            <div style="font-size:125%"> 
+                                ${ex} 
+                            </div>
+                            
+                            <div style="margin-top: 20px">
+                                ${tb}
+                            </div>
+                            """
+        
+        self.body = Template(error_500_template).render(ex = ex.__repr__(), tb = tb).encode('utf-8')
 
 class XResponse(BaseResponse):
     " Ajax response, return a JSON object "

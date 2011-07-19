@@ -123,7 +123,7 @@ class Model(object):
         return copy.deepcopy(self.__instdict__)
     
     @classmethod
-    def get(cls, id):
+    def get(cls, id, storage = None): # storage=None for backword capability 
         "Get object from Redis storage by ID"
         # First try to find object by Id
         #inst_id = RedisConn.get(':'.join([cls.get_collection_name(), str(id), 'id']))

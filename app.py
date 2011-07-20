@@ -44,15 +44,17 @@ def noodlesapp(env, start_response):
     
     try:
         response = callable_obj()
+        return response(env, start_response)
     # Capture traceback here and send it if debug mode
     except Exception as e:
         if DEBUG:
             f = logging.Formatter()
             traceback = f.formatException(sys.exc_info())
             response = DebugError500(e, traceback)
+            return response(env, start_response)
         #TODO: write production Error500 response
             
-    return response(env, start_response)
+    
 # Start server function, you may specify port number here
 def startapp():
     try:

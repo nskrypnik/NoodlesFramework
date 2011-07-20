@@ -35,7 +35,10 @@ class Redirect(BaseResponse):
     " Redirect response "
     def __init__(self, redirect_url):
         super(Redirect, self).__init__()
-        raise NotImplemented
+        self.status = 301
+        self.headerlist = [('Content-type', 'text/html')]
+        self.charset = 'utf-8'
+        self.location = redirect_url
 
 class Error404(BaseResponse):
     " Simple Http 404 error implementation "

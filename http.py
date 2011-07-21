@@ -35,7 +35,7 @@ class Redirect(BaseResponse):
     " Redirect response "
     def __init__(self, redirect_url):
         super(Redirect, self).__init__()
-        self.status = 301
+        self.status = 302
         self.headerlist = [('Content-type', 'text/html')]
         self.charset = 'utf-8'
         self.location = redirect_url

@@ -38,7 +38,6 @@ class Dispatcher(object):
     def get_callable(self, request):
         " Returns callable object "
         route_res = self.mapper.match(request.path)
-        #print "Route result", route_res
         if not route_res: return self.not_found(request)
         # Get controller name and action from routes
         controller_name = route_res.get('controller')

@@ -5,6 +5,7 @@ DEBUG = True
 
 # Specify the server port
 PORT = 8090
+ENCODING = 'utf-8' # default application encoding
 
 APP_DIR = os.getcwd()
 

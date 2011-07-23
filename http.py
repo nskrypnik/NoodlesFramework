@@ -8,6 +8,10 @@ import webob
 import json
 import logging
 
+try:
+    from config import ENCODING
+except:
+    ENCODING = 'utf-8'
 
 SET_COOKIES = '__set_cookies'
 UNSET_COOKIES = '__unset_cookies'
@@ -29,7 +33,7 @@ class Response(BaseResponse):
         self.status = 200 # 200 OK, it's default, but anyway...
         self.headerlist = [('Content-type', 'text/html')]
         self.charset = 'utf-8'
-        self.body = body
+        self.body = body.encode(ENCODING)
 
 class Redirect(BaseResponse):
     " Redirect response "

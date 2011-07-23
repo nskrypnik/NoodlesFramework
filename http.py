@@ -8,6 +8,9 @@ import webob
 import json
 import logging
 
+# Use this for backword capability
+from noodles.websocket import WebSocket, websocket
+
 try:
     from config import ENCODING
 except:
@@ -104,27 +107,6 @@ class XResponse(BaseResponse):
         
         self.body = json.dumps(response_dict)
 
-class WebSocket():
-    """
-        Object for Web Socket handling.
-        Get an function f parameter. f is function that get an
-        server socket instance ws and handle data from it
-    """
-    def __init__(self, f, *args, **kwargs):
-        self.handler = f
-        self.args = args
-        self.kwargs = kwargs
-    
-    def __call__(self, env, start_response):
-        start_response('200 OK',[('Content-Type','application/json')])
-        #print env
-        get_websocket = env.get('wsgi.get_websocket')
-        ws = get_websocket()
-        ws.do_handshake()
-        # TODO: create Error object
-        if not ws: raise Exception('No server socket instance!')
-        self.handler(ws, *self.args, **self.kwargs)
-
 # Specify decorator for ajax response controller functions
 # Usage:
 #
@@ -136,9 +118,4 @@ def ajax_response(func):
     def gen(**kwargs):
         resp_dict = func(**kwargs)
         return XResponse(resp_dict)
-    return gen
-
-def websocket(func):
-    def gen(request, *args, **kwargs):
-        return WebSocket(func, *args, **kwargs)
     return gen

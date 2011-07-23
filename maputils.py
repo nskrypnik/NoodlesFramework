@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from noodles.templates import Templater
+
 def urlmap(map, url_rules):
     " Util for make url rules easy "
     for rule in url_rules:
@@ -20,3 +22,9 @@ def urlmap(map, url_rules):
         kwargs['action'] = action
         
         map.connect(None, url_pattern, **kwargs)
+        
+def direct_to_template(url, templatename, context={}):
+    params = {'templatename': templatename}
+    params.update(context)
+    return (url, '.'.join([Templater._name, 'render']), params)
+

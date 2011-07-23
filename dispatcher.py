@@ -1,5 +1,6 @@
 " Implement dispatch logic "
 from noodles.http import Error404
+from noodles.templates import Templater 
 import sys, os
 
 # Add standard controllers dir to PYTHON_PATH directory
@@ -34,6 +35,8 @@ class Dispatcher(object):
             mod = sys.modules.get(controller)
             if not mod: mod = base_mod
             self.controllers[controller] = mod
+        #add some default controllers
+        self.controllers[Templater._name] = Templater()
 
     def get_callable(self, request):
         " Returns callable object "

@@ -12,7 +12,7 @@ $ python runserver.py
 
 Fail? Just install all necessary libs:
 
-redis-py, webob, routes, mako, gevent, websocket(https://bitbucket.org/denis/websocket)
+redis-py, webob, routes, mako, gevent
 
 For more detail info see INSTALL...
 

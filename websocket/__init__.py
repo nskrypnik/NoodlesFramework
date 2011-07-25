@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from websockhandler import WebSocketHandler
 
 class WebSocket(object):
     """

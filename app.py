@@ -50,6 +50,7 @@ def noodlesapp(env, start_response):
         if DEBUG:
             f = logging.Formatter()
             traceback = f.formatException(sys.exc_info())
+            print traceback # Show traceback in console
             response = DebugError500(e, traceback)
             return response(env, start_response)
         #TODO: write production Error500 response

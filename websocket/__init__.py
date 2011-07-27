@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 from websockhandler import WebSocketHandler
+from websockhandler import MultiChannelWS
+
+MultiChannelWebSocket = MultiChannelWS
 
 class WebSocket(object):
     """

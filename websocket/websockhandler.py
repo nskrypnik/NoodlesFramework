@@ -4,6 +4,7 @@ from gevent.event import Event
 
 import logging
 import sys
+import json
 
 try:
     from config import ENCODING
@@ -16,14 +17,28 @@ class WebSocketSendError(Exception):
 class WebSocketError(Exception):
     pass
 
+class MultiChannelWSError(Exception):
+    pass
+
 class WebSocketMessage(object):
     
     def __init__(self, data):
+        if type(data) == dict:
+            self.data = data
+            return
+        
         self.raw_data = data.encode(ENCODING)
         try:
             self.data = json.loads(self.raw_data)
         except:
             self.data = self.raw_data
+            
+    def __getattr__(self, name):
+        if name == 'raw_data':
+            self.raw_data = json.dumps(self.data)
+            return self.raw_data
+            
+            
 
 
 class WebSocketHandler(object):
@@ -55,12 +70,8 @@ class WebSocketHandler(object):
             ])
             
         That's all!
-
-    """
     
-    def __new__(cls, request):
-        _inst = object.__new__(cls, request)
-        return _inst
+    """
     
     def __init__(self, request):
         self.request = request
@@ -101,16 +112,16 @@ class WebSocketHandler(object):
                 
     
     def onopen(self):
-        raise NotImplementedError('onopen function must be implemented')
+        pass
     
     def onclose(self):
-        raise NotImplementedError('onclose function must be implemented')
+        pass
     
     def onmessage(self, msg):
-        raise NotImplementedError('onmessage function must be implemented')
+        pass
     
     def onerror(self, e):
-        raise NotImplementedError('onerror function must be implemented')
+        pass
     
     def send(self, data):
         if type(data) == dict:
@@ -123,3 +134,67 @@ class WebSocketHandler(object):
         except:
             # seems to be disconnected
             self.onclose()
+
+class MultiChannelWS(WebSocketHandler):
+    """
+        Use this class to implement virtual channels over web socket.
+        To use it, inherit class from this and override init_channel function,
+        where you can register all channel handlers by register_channel function
+        
+        Example:
+        
+        class MyWebSocket(MultiChannelWS):
+        
+            def init_channels(self):
+                self.register_channel(0, NullChannelHandler)
+                self.register_channel(1, FirstChannelHandler)
+                ...
+    """
+    
+    class ChannelSend(object):
+        
+        def __init__(self, chid, wsh):
+            self.chid = chid
+            self.wsh = wsh
+            
+        def __call__(self, data):
+            package_to_send = {'chid': self.chid, 'pkg': data}
+            self.wsh.send(package_to_send)
+
+    def __init__(self, request):
+        super(MultiChannelWS, self).__init__(request)
+        self.channel_handlers = {}
+            
+    def init_channels(self):
+        "Override it to add new channel handlers by register_channel method"
+        raise NotImplementedError('You must specify this function')
+    
+    def register_channel(self, chid, channel_handler_class):
+        "Registers new channel with channel id - chid and channel handler class - channel_handler_class"
+        channel_handler = channel_handler_class(self.request)
+        channel_handler.send = self.ChannelSend(chid, self)
+        self.channel_handlers[chid] = channel_handler
+        
+    
+    def onopen(self):
+        self.init_channels()
+        for channel_handler in self.channel_handlers.values():
+            channel_handler.onopen()
+            
+    def onclose(self):
+        for channel_handler in self.channel_handlers.values():
+            channel_handler.onclose()
+    
+    def onmessage(self, msg):
+        chid = msg.data.get('chid')
+        if chid == None:
+            raise MultiChannelWSError('No such channel ID in request')
+        
+        channel_handler = self.channel_handlers.get(chid)
+        if not channel_handler:
+            raise MultiChannelWSError('No such channel')
+        
+        channel_handler.onmessage(WebSocketMessage(msg.data['pkg']))
+        
+        
+        

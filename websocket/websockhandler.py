@@ -3,6 +3,12 @@
 from gevent.event import Event
 
 import logging
+import sys
+
+try:
+    from config import ENCODING
+except ImportError:
+    ENCODING = 'utf-8'
 
 class WebSocketSendError(Exception):
     pass
@@ -13,11 +19,11 @@ class WebSocketError(Exception):
 class WebSocketMessage(object):
     
     def __init__(self, data):
-        self.raw_data = data
+        self.raw_data = data.encode(ENCODING)
         try:
-            self.data = json.loads(data)
+            self.data = json.loads(self.raw_data)
         except:
-            self.data = data
+            self.data = self.raw_data
 
 
 class WebSocketHandler(object):
@@ -58,7 +64,7 @@ class WebSocketHandler(object):
     
     def __init__(self, request):
         self.request = request
-        self.close_event = Event
+        self.close_event = Event()
     
     def __call__(self, env, start_response):
         start_response('200 OK',[('Content-Type','application/json')])
@@ -66,6 +72,7 @@ class WebSocketHandler(object):
         ws = get_websocket()
         ws.do_handshake()
         if not ws: raise WebSocketError('No server socket instance!')
+        self.ws = ws
         
         self.onopen()
         # Endless event loop
@@ -76,7 +83,7 @@ class WebSocketHandler(object):
                 f = logging.Formatter()
                 traceback = f.formatException(sys.exc_info())
                 logging.error('Servelet fault: \n%s' % traceback)
-                self.close_event.set()
+                break
             
             if data:
                 try:
@@ -107,7 +114,7 @@ class WebSocketHandler(object):
     
     def send(self, data):
         if type(data) == dict:
-            data = json.dumps(data)
+            data = json.dumps(data)            
         else:
             if type(data) != str:
                 raise WebSocketSendError('Sended value must be string or dictionary type')

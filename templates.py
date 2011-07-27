@@ -70,7 +70,6 @@ class Templater(object):
 
     @staticmethod
     def render(request, templatename, **kwargs):
-        print 'Templater::context::kwargs', kwargs, type(kwargs)
         rendered_page = render_to_string(templatename, kwargs, request)
         return Response(rendered_page)
     

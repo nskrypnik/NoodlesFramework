@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+'''
+Created on Jul 27, 2011
+
+@author: Niko Skrypnik
+'''
+
 from websockhandler import WebSocketHandler
 from websockhandler import MultiChannelWS
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from gevent.event import Event
+from wssession import WSSession
 
 import logging
 import sys
@@ -151,19 +152,23 @@ class MultiChannelWS(WebSocketHandler):
                 ...
     """
     
-    class ChannelSend(object):
+    class ChannelSender(object):
         
-        def __init__(self, chid, wsh):
+        def __init__(self, chid, _wsh):
             self.chid = chid
-            self.wsh = wsh
+            self._wsh = _wsh
             
         def __call__(self, data):
-            package_to_send = {'chid': self.chid, 'pkg': data}
-            self.wsh.send(package_to_send)
+            package_to_send = {'chid': self.chid, 
+                               'pkg': data,
+                               'session_params': self._wsh.session.params,
+                               }
+            self._wsh.send(package_to_send)
 
     def __init__(self, request):
         super(MultiChannelWS, self).__init__(request)
         self.channel_handlers = {}
+        self.session = WSSession()
             
     def init_channels(self):
         "Override it to add new channel handlers by register_channel method"
@@ -172,7 +177,8 @@ class MultiChannelWS(WebSocketHandler):
     def register_channel(self, chid, channel_handler_class):
         "Registers new channel with channel id - chid and channel handler class - channel_handler_class"
         channel_handler = channel_handler_class(self.request)
-        channel_handler.send = self.ChannelSend(chid, self)
+        channel_handler.send = self.ChannelSender(chid, self)
+        channel_handler.session = self.session
         self.channel_handlers[chid] = channel_handler
         
     

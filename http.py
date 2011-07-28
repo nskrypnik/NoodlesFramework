@@ -8,9 +8,6 @@ import webob
 import json
 import logging
 
-# Use this for backword capability
-from noodles.websocket import WebSocket, websocket
-
 try:
     from config import ENCODING
 except:

@@ -11,7 +11,6 @@ from noodles.dispatcher import Dispatcher
 from noodles.middleware import AppMiddlewares
 from config import URL_RESOLVER, CONTROLLERS, MIDDLEWARES, DEBUG
 
-import rediswrap
 import logging
 import traceback
 import sys

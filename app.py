@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+
+@author: Niko Skrypnik
+
+"""
 from gevent import monkey
 from gevent.wsgi import WSGIServer
 monkey.patch_all()

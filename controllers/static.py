@@ -50,7 +50,6 @@ def index(request, path_info):
     if not mime_type: raise Exception("unknown doc, or something like that :-P: %s" % ext	)
     static_file_path = os.path.join(STATIC_ROOT, path_info)
     # Check if this path exists
-    print 'static_file_path:', static_file_path
     if not os.path.exists(static_file_path): 
         error_msg = "<h1>Error 404</h1> No such file STATIC_ROOT/%s" % path_info
         return Error404(error_msg)

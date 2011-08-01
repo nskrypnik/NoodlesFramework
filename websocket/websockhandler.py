@@ -74,8 +74,9 @@ class WebSocketHandler(object):
     
     """
     
-    def __init__(self, request):
-        self.request = request
+    def __init__(self, **kwargs):
+        for k in kwargs:
+            setattr(self, k, kwargs[k])
         self.close_event = Event()
     
     def __call__(self, env, start_response):
@@ -165,8 +166,8 @@ class MultiChannelWS(WebSocketHandler):
                                }
             self._wsh.send(package_to_send)
 
-    def __init__(self, request):
-        super(MultiChannelWS, self).__init__(request)
+    def __init__(self, **kwargs):
+        super(MultiChannelWS, self).__init__(**kwargs)
         self.channel_handlers = {}
         self.session = WSSession()
             
@@ -176,7 +177,7 @@ class MultiChannelWS(WebSocketHandler):
     
     def register_channel(self, chid, channel_handler_class):
         "Registers new channel with channel id - chid and channel handler class - channel_handler_class"
-        channel_handler = channel_handler_class(self.request)
+        channel_handler = channel_handler_class(request = self.request)
         channel_handler.send = self.ChannelSender(chid, self)
         channel_handler.session = self.session
         self.channel_handlers[chid] = channel_handler

@@ -21,7 +21,13 @@ def urlmap(map, url_rules):
         kwargs['controller'] = controller
         kwargs['action'] = action
         
+        if url_pattern[-1] == '/':
+            url_pattern2 = url_pattern[:-1]
+        else:
+            url_pattern2 = url_pattern + '/'
+        
         map.connect(None, url_pattern, **kwargs)
+        map.connect(None, url_pattern2, **kwargs)
         
 def direct_to_template(url, templatename, context={}):
     params = {'templatename': templatename}

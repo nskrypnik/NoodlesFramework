@@ -41,11 +41,14 @@ class Session():
     def __init__(self, id = None):
         self.data = self._Data()
         if id:
-            self._sessdata = SessionData.get(id = id)
-        else:
-            self._sessdata = SessionData()
-            self._sessdata.data = '{}'
-            self._sessdata.save()
+            try:
+                self._sessdata = SessionData.get(id = id)
+                    return
+            except DoesNotExist:
+                pass
+        self._sessdata = SessionData()
+        self._sessdata.data = '{}'
+        self._sessdata.save()
         self.id = self._sessdata.id 
         self.data.update(json.loads(self._sessdata.data))
     
@@ -64,6 +67,8 @@ class SessionMiddleware(BaseMiddleware):
             if sess_id:
                 self.request.session = Session(sess_id)
                 response = self.callable()
+                if self.request.session.id != sess_id:
+                    response.set_cookie(SESSION_COOKIE, str(self.request.session.id))
             else:
                 self.request.session = Session()
                 response = self.callable()

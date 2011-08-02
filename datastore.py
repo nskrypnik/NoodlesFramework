@@ -4,8 +4,16 @@ from noodles.redisconn import RedisConn
 
 import re, logging, copy
 import json
+import os
 
 non_record = re.compile(r'__\w+__')
+
+try:
+    from config import REDIS_NAMESPACE
+except ImportError:
+    current_path = os.getcwd()
+    current_dir = os.path.split(current_path)[-1]
+    REDIS_NAMESPACE = current_dir.lower().replace(' ', '_')
 
 class DoesNotExist(Exception):
     pass
@@ -96,9 +104,9 @@ class Model(object):
             logging.warning('You should save embedded objects with high level object')
             return
         if not self.id:
-            new_id = RedisConn.incr(self.__class__.__name__.lower() + '_key')
+            new_id = RedisConn.incr(':'.join([REDIS_NAMESPACE, self.__class__.__name__.lower() + '_key']))
             self.id = new_id
-        RedisConn.set(':'.join([self.collection_name, str(self.id)]), json.dumps(self.__instdict__))
+        RedisConn.set(':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), json.dumps(self.__instdict__))
         #self.save_redis_recursive(':'.join([self.collection_name, str(self.id)]), self.__instdict__)        
                     
     @classmethod
@@ -126,7 +134,7 @@ class Model(object):
     def get(cls, id, storage = None): # storage=None for backword capability 
         "Get object from Redis storage by ID"
         # First try to find object by Id
-        inst_data = RedisConn.get(':'.join([cls.get_collection_name(), str(id)]))
+        inst_data = RedisConn.get(':'.join([REDIS_NAMESPACE, cls.get_collection_name(), str(id)]))
         if not inst_data: # No objects with such ID
             raise DoesNotExist('No model in Redis srorage with such id')
         else:

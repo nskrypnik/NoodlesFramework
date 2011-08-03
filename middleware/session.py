@@ -5,13 +5,14 @@
     We can use it with Web Socket session together
 """ 
 
-from noodles.datastore import Model, Value
+from noodles.datastore import Model, Value, DoesNotExist
 from noodles.middleware import BaseMiddleware
 try:
     from config import SESSION_COOKIE
 except:
     SESSION_COOKIE = 'hsess_id' 
 import json
+import logging
 
 class SessionData(Model):
     data = Value(str);
@@ -39,11 +40,14 @@ class Session():
             return "Session Data: %s" % self.__dict__.__repr__()
     
     def __init__(self, id = None):
+        self.id = None
         self.data = self._Data()
         if id:
             try:
                 self._sessdata = SessionData.get(id = id)
-                    return
+                self.id = self._sessdata.id
+                self.data.update(json.loads(self._sessdata.data))
+                return
             except DoesNotExist:
                 pass
         self._sessdata = SessionData()
@@ -64,18 +68,13 @@ class SessionMiddleware(BaseMiddleware):
         if not hasattr(self.request, 'session'):
             # Get from cookie HTTP session ID
             sess_id = self.request.str_cookies.get(SESSION_COOKIE)
-            if sess_id:
-                self.request.session = Session(sess_id)
-                response = self.callable()
-                if self.request.session.id != sess_id:
-                    response.set_cookie(SESSION_COOKIE, str(self.request.session.id))
-            else:
-                self.request.session = Session()
-                response = self.callable()
-                if hasattr(response, 'is_noodles_response'):
-                    # callable returns native noodlse Response object
-                    # let's update it cookies
-                    response.set_cookie(SESSION_COOKIE, str(self.request.session.id))
+
+            self.request.session = Session(sess_id)
+            response = self.callable()
+            if hasattr(response, 'is_noodles_response') and sess_id != self.request.session.id:
+                # callable returns native noodlse Response object
+                # let's update it cookies
+                response.set_cookie(SESSION_COOKIE, str(self.request.session.id))
             
             self.request.session.save()
             return response

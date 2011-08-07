@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+'''
+filedesc: default boilerplate config for a new noodles project
+'''
 import os
 
 DEBUG = True

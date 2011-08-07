@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+'''
+filedesc: framework middleware base class
+'''
 import sys
 
 class MiddlewareLoadError(Exception):

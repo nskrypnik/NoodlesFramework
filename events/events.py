@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Created on Jul 29, 2011
-
+filedesc: Small internal server events framework based on Redis
 @author: Niko Skrypnik
 """
 
-" Small internal server events framework based on Redis"
 
 from noodles.redisconn import RedisConn
 import gevent

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+'''
+filedesc: redis connection wrapper which gives a soft error in case that noodles is run on a machine without redis
+'''
 import logging
 from gevent.coros import RLock 
 

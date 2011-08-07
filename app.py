@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-"""
-
+'''
+filedesc: machinery for launching the wsgi server 
 @author: Niko Skrypnik
-
-"""
+'''
 from gevent import monkey
 from gevent.wsgi import WSGIServer
 monkey.patch_all()

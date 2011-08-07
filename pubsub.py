@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-
-# Layer for implementation of Publisher/Subscription pattern in noodels
-# This pattern is implemented via redis storage
+'''
+filedesc: Layer for implementation of Publisher/Subscription pattern. is done via redis PUBLISH/SUBSCRIBE
+'''
 
 import logging
 import redis, json, gevent

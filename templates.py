@@ -1,4 +1,6 @@
-# Here we implement mako templating for our server
+'''
+filedesc: mako templating for our server
+'''
 
 from mako.template import Template
 from mako.lookup import TemplateLookup

@@ -1,3 +1,6 @@
+'''
+filedesc: base websocket implementation on top of gevent
+'''
 import sys
 import traceback
 from socket import error, SHUT_WR

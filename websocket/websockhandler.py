@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+'''
+filedesc: base handler class is defined from which a websocket channel implementation is derived
+'''
 from gevent.event import Event
 from wssession import WSSession
 
@@ -46,7 +48,7 @@ class WebSocketHandler(object):
     """
         Abstract class for implementing server side web socket logic.
         
-        Using:
+        Usage:
         
         1) Inherit your handler from WebSocketHandler class and override
             onopen, onmessage, onclose functions in controllers module
@@ -130,7 +132,7 @@ class WebSocketHandler(object):
             data = json.dumps(data)            
         else:
             if type(data) != str:
-                raise WebSocketSendError('Sended value must be string or dictionary type')
+                raise WebSocketSendError('Sent value must be string or dictionary type')
         try:
             self.ws.send(data)
         except:

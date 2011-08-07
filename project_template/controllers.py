@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+'''
+filedesc: default controller file
+'''
 from noodles.http import Response
 
 def index(request):

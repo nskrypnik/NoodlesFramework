@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-# Module for extending webob Request and Response classes
+'''
+filedesc: Module for extending webob Request and Response classes
+'''
 # to use in our server application
 
 from mako.template import Template

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+'''
+filedesc: default url mapping
+'''
 from routes import Mapper
 from config import DEBUG
 from noodles.maputils import urlmap

@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+'''
+filedesc: a kind of redis orm
+'''
 
 from noodles.redisconn import RedisConn
 

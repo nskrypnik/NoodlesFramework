@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
 Created on Jul 28, 2011
-
+filedesc: web socket session object definitino
 @author: Niko Skrypnik
 '''
 

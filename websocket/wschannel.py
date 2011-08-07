@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+'''
+filedesc: an older, deprecated websocket multichannel implementation
+'''
 class BaseChannelHandler(object):
     """
         Base class for channel handlers. Abstract, use just for creation of other handler classes.

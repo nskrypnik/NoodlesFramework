@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+'''
+filedesc: url mapping aux funcs
+'''
 from noodles.templates import Templater
 
 def urlmap(map, url_rules):

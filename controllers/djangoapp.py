@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+'''
+filedesc: helper function to run django apps under noodles
+'''
 import os
 
 try:

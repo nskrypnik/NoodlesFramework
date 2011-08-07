@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-# Create one global connection
+'''
+filedesc: Create one global redis connection
+'''
 
 from config import REDIS_HOST
 import redis

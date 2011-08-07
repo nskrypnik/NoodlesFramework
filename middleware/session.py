@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-
-"""
-    Module for session support. There is HTTP session, standard http concept.
-    We can use it with Web Socket session together
-""" 
+'''
+filedesc: Module for session support. There is HTTP session, standard http concept. We can use it with Web Socket session together
+'''
 
 from noodles.datastore import Model, Value, DoesNotExist
 from noodles.middleware import BaseMiddleware

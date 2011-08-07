@@ -1,4 +1,6 @@
-" Implement dispatch logic "
+'''
+filedesc: request dispatch logic
+'''
 from noodles.http import Error404
 from noodles.templates import Templater 
 import sys, os

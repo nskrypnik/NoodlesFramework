@@ -1,4 +1,6 @@
-"Controller for static content"
+'''
+filedesc: Controller for serving static content
+'''
 import os
 from noodles.http import BaseResponse, Error404
 from config import STATIC_ROOT

@@ -63,9 +63,14 @@ def noodlesapp(env, start_response):
 # Start server function, you may specify port number here
 def startapp():
     try:
-        from config import PORT
+        from config import PORT,SERVER_LOGTYPE
     except ImportError:
         PORT = 8088 # By defaultl 8088 debug port
     print 'Start server on %i...' % PORT
-    server.WebSocketServer(('', PORT), noodlesapp).serve_forever()
+    if SERVER_LOGTYPE=='supress':
+        import StringIO
+        s = StringIO.StringIO()
+    else:
+        s = SERVER_LOGTYPE
+    server.WebSocketServer(('', PORT), noodlesapp,log=s).serve_forever()
     #WSGIServer(('', PORT), noodlesapp).serve_forever()

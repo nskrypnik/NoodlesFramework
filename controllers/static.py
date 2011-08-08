@@ -87,5 +87,5 @@ def index(request, path_info):
         response.headerlist = [('Content-type', mime_type)]
 
     # This seems to be clear, return this response object
-    
+
     return response

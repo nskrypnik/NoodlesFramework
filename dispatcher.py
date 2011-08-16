@@ -15,7 +15,7 @@ class CallWrapper(object):
         try:
             self.action = getattr(controller, action)
         except AttributeError:
-            raise Exception('No such action in controller %s' % controller.__name__)
+            raise Exception('No such action %s in controller %s' % (action,controller.__name__))
         
     def __call__(self):
         return self.action(**self.extra_args)

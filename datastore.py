@@ -137,6 +137,7 @@ class Model(object):
     def get(cls, id, storage = None): # storage=None for backword capability 
         "Get object from Redis storage by ID"
         # First try to find object by Id
+        # example: gameserver:scratchgames:101
         inst_data = RedisConn.get(':'.join([REDIS_NAMESPACE, cls.get_collection_name(), str(id)]))
         if not inst_data: # No objects with such ID
             raise DoesNotExist('No model in Redis srorage with such id')
@@ -144,7 +145,13 @@ class Model(object):
             # Copy structure of Class to new dictionary
             instance_dict = json.loads(inst_data.__str__())
             return cls(valuedict = instance_dict)
-
+    
+    @classmethod
+    def delete(cls, id, storage = None): # storage=None for backword capability
+        "Delete key specified by ``id``"
+        result = RedisConn.delete(':'.join([REDIS_NAMESPACE, cls.get_collection_name(), str(id)]))
+        logging.debug('delete::______________ %s'%result)
+        return result 
       
 class Node(Value):
     " Use it for embedd objects to model "

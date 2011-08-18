@@ -38,3 +38,5 @@ MIDDLEWARES = [
                # Specify list of middlewares used in your application here
                #'session.SessionMiddleware', 
                ]
+
+SERVER_LOGTYPE='default'

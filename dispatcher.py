@@ -3,7 +3,7 @@ filedesc: request dispatch logic
 '''
 from noodles.http import Error404
 from noodles.templates import Templater 
-import sys, os
+import sys, os,urllib
 
 # Add standard controllers dir to PYTHON_PATH directory
 sys.path.append( os.path.join(os.path.dirname(__file__), 'controllers') )
@@ -52,12 +52,16 @@ class Dispatcher(object):
         if not controller: raise Exception('No such controller \'%s\'' % controller_name)
 
         # Prepare extra args for callable
+
         extra_args = route_res.copy() # copying all data from routes dictionary
+        for k,v in extra_args.items():
+            extra_args[k] = urllib.unquote(v).decode('utf8')
         # Delete controller and action items
         del extra_args['controller']; del extra_args['action']
         extra_args['request'] = request
 
         callable_obj = CallWrapper(controller, action, extra_args)
+
         return callable_obj
 
     def not_found(self, request):

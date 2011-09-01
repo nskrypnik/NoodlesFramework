@@ -109,9 +109,13 @@ class Model(object):
         if not self.id:
             new_id = RedisConn.incr(':'.join([REDIS_NAMESPACE, self.__class__.__name__.lower() + '_key']))
             self.id = new_id
+#        print ':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), json.dumps(self.__instdict__)
         RedisConn.set(':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), json.dumps(self.__instdict__))
+#        print '==============================================================================================='
+#        print json.dumps(self.__instdict__)
         #self.save_redis_recursive(':'.join([self.collection_name, str(self.id)]), self.__instdict__)        
-                    
+
+            
     @classmethod
     def get_structure(cls):
         structure = cls.__structure__.get(cls.__name__)

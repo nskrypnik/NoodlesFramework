@@ -36,16 +36,21 @@ class Response(BaseResponse):
         self.headerlist = [('Content-type', 'text/html')]
         self.charset = 'utf-8'
         self.body = body.encode(ENCODING)
+        
 
 class Redirect(BaseResponse):
     " Redirect response "
-    def __init__(self, redirect_url):
+    def __init__(self, redirect_url, cookie_dict=None):
         super(Redirect, self).__init__()
         self.status = 302
         self.headerlist = [('Content-type', 'text/html')]
         self.charset = 'utf-8'
+        #TODO: serg
+        if cookie_dict:         
+            for cookie in cookie_dict:
+                self.set_cookie(str(cookie), str(cookie_dict.get(cookie)))
         self.location = redirect_url
-
+        
 class Error404(BaseResponse):
     " Simple Http 404 error implementation "
     def __init__(self, error_body=''):

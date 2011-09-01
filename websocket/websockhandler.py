@@ -97,7 +97,7 @@ class WebSocketHandler(object):
             except Exception as e:
                 f = logging.Formatter()
                 traceback = f.formatException(sys.exc_info())
-                logging.error('Servelet fault: \n%s' % traceback)
+                logging.error('Servlet fault: \n%s' % traceback)
                 break
             
             if data:

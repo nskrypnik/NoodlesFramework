@@ -12,7 +12,7 @@ import logging
 MIME_TYPES = {
     # Application types
     '.swf': 'application/x-shockwave-flash',
-    
+
     # Text types
     '.gz':'application/x-tar',
     '.js': 'text/javascript',
@@ -25,13 +25,13 @@ MIME_TYPES = {
     '.gif': 'image/gif',
     '.png': 'image/png',
     '.tiff': 'image/tiff',
-    
+
     # Sound files
-    
+
     '.wav': 'audio/x-wav',
     '.mp3': 'audio/mpeg',
     '.ogg': 'audio/ogg',
-    
+
     # And much more...
     # Add mime types from this source http://en.wikipedia.org/wiki/Internet_media_type
     # Thank you Jimmy
@@ -49,16 +49,16 @@ def index(request, path_info):
     # define a file extansion
     base, ext = os.path.splitext(path_info) # Get the file extansion
     mime_type = MIME_TYPES.get(ext)
-    if not mime_type: raise Exception("unknown doc, or something like that :-P: %s" % ext	)
+    if not mime_type: raise Exception("unknown doc, or something like that :-P: %s" % ext)
     static_file_path = os.path.join(STATIC_ROOT, path_info)
     # Check if this path exists
-    if not os.path.exists(static_file_path): 
+    if not os.path.exists(static_file_path):
         error_msg = "<h1>Error 404</h1> No such file STATIC_ROOT/%s" % path_info
         return Error404(error_msg)
     # configure response
     static_file = open(static_file_path, 'rb') # Open file
     # Here we try to handle Range parameter
-    
+
     content_offset = 0
     content_end = 0
     request_range = request.headers.get('Range')
@@ -69,20 +69,20 @@ def index(request, path_info):
         content_offset = toInt(range_bytes[0])
         content_end = toInt(range_bytes[1])
         parital_response = True
-    
-    
-    static_content = static_file.read()        
+
+
+    static_content = static_file.read()
     if content_end <= 0 or content_end >= len(static_content): content_end = len(static_content) - 1
     response.body = static_content[content_offset: content_end + 1]
-    
+
 
     response.charset = 'utf-8'
-    
+
     if parital_response:
         response.status = 206
-        response.headerlist = [('Content-type', mime_type), 
+        response.headerlist = [('Content-type', mime_type),
         ('Content-Range', 'bytes %i-%i/%i' % (content_offset, content_end, len(static_content)))]
-        
+
     else:
         response.headerlist = [('Content-type', mime_type)]
 

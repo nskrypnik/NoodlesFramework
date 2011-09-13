@@ -25,7 +25,7 @@ resolver = __import__(URL_RESOLVER, globals(), locals())
 
 # Create an dispatcher instance
 dispatcher = Dispatcher(mapper=resolver.get_map(),
-                        controllers = CONTROLLERS
+                        controllers=CONTROLLERS
                       )
 
 # Load all midllewares for application
@@ -44,7 +44,7 @@ def noodlesapp(env, start_response):
     # Callable function must return Respone object
     for middleware in app_middlewares:
         callable_obj = middleware(callable_obj) # Hardcoded use of HTTP Session middleware
-    
+
     try:
         response = callable_obj()
         return response(env, start_response)
@@ -58,19 +58,19 @@ def noodlesapp(env, start_response):
             response = DebugError500(e, traceback)
             return response(env, start_response)
         #TODO: write production Error500 response
-            
-    
+
+
 # Start server function, you may specify port number here
 def startapp():
     try:
-        from config import PORT,SERVER_LOGTYPE
+        from config import PORT, SERVER_LOGTYPE
     except ImportError:
         PORT = 8088 # By defaultl 8088 debug port
     print 'Start server on %i...' % PORT
-    if SERVER_LOGTYPE=='supress':
+    if SERVER_LOGTYPE == 'supress':
         import StringIO
         s = StringIO.StringIO()
     else:
         s = SERVER_LOGTYPE
-    server.WebSocketServer(('', PORT), noodlesapp,log=s).serve_forever()
+    server.WebSocketServer(('', PORT), noodlesapp, log=s).serve_forever()
     #WSGIServer(('', PORT), noodlesapp).serve_forever()

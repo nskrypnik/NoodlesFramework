@@ -26,4 +26,4 @@ class FlashPolicyServer(StreamServer):
         if req == expected:
             socket.sendall(self.policy)
         elif self.noisy:
-            print 'Invalid request: %r' % (req, )
+            print 'Invalid request: %r' % (req,)

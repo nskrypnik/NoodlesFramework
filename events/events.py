@@ -21,31 +21,31 @@ class NoodlesEventError(Exception):
 
 class Event(object):
     "I'm event object"
-    
+
     _events_id_key = ['__noodles_events_index']
-    
+
     # Hack for saving memory
     @property
     def events_id_key(self):
         return self._events_id_key[0]
-    
+
     def __init__(self):
         self.id = RedisConn.incr(self.events_id_key)
         self.callback = None
-    
+
     def register(self, callback):
         "Register event in system "
         NOODLES_EVENTS_LIST[self.id] = self
         self.callback = callback
-    
-    def firing(self, event_data = {}):
+
+    def firing(self, event_data={}):
         event_msg = {'event_id': self.id, 'event_data': event_data}
         RedisConn.publish(NOODLES_EVENTS_CHANNEL, json.dumps(event_msg))
         print 'Event is firing'
-    
+
     def unregister(self):
         NOODLES_EVENTS_LIST.pop(self.id)
-        
+
 def event_listener():
     print "event_listener:: i'm event listener"
     rc = redis.Redis()
@@ -64,5 +64,5 @@ def event_listener():
                 else: event.callback(event_data)
             else:
                 logging.warning('Noodles events engine: Event#%i is unregistered' % event_id)
-            
+
 gevent.spawn(event_listener)

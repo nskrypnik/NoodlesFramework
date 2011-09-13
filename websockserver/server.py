@@ -145,7 +145,7 @@ class WebSocketServer(WSGIServer):
                     message = '%r %r' % (message, args)
                 except Exception:
                     traceback.print_exc()
-#            log.write('%s %s\n' % (datetime.now().replace(microsecond=0), message))
+            log.write('%s %s\n' % (datetime.now().replace(microsecond=0), message))
 
 
 def _format_address(server):

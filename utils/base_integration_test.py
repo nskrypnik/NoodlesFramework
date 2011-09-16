@@ -2,6 +2,7 @@
 Base Selenium test methods
 """
 import unittest
+import urllib2
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
@@ -11,6 +12,7 @@ class BaseTest(unittest.TestCase):
         self.driver = None 
         self.method = None
         self.locator = None
+        self.url_response = None
         self.testname = "self." + testname
         self.__dict__.update(kwargs)
         self.clean()
@@ -45,6 +47,10 @@ class BaseTest(unittest.TestCase):
                               self.selenium.get_text(self.locator))
         except AssertionError, self.e: 
             self.verificationErrors.append(str(self.e))
+    
+    def assert_url_response(self):
+        try: urllib2.urlopen(self.url_response)
+        except AssertionError, self.e: self.verificationErrors.append(str(self.e))
     
     def verify_equal_find_element_by_css_selector_text(self):
         """

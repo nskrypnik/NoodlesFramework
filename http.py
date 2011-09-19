@@ -29,14 +29,14 @@ class BaseResponse(webob.Response):
 
 class Response(BaseResponse):
     " Simple response class with 200 http header status "
-    def __init__(self, body = ''):
+    def __init__(self, body=''):
         super(Response, self).__init__()
         # Set standard response attributes
         self.status = 200 # 200 OK, it's default, but anyway...
         self.headerlist = [('Content-type', 'text/html')]
         self.charset = 'utf-8'
         self.body = body.encode(ENCODING)
-        
+
 
 class Redirect(BaseResponse):
     " Redirect response "
@@ -46,11 +46,11 @@ class Redirect(BaseResponse):
         self.headerlist = [('Content-type', 'text/html')]
         self.charset = 'utf-8'
         #TODO: serg
-        if cookie_dict:         
+        if cookie_dict:
             for cookie in cookie_dict:
                 self.set_cookie(str(cookie), str(cookie_dict.get(cookie)))
         self.location = redirect_url
-        
+
 class Error404(BaseResponse):
     " Simple Http 404 error implementation "
     def __init__(self, error_body=''):
@@ -59,7 +59,7 @@ class Error404(BaseResponse):
         self.headerlist = [('Content-type', 'text/html')]
         self.charset = 'utf-8'
         self.body = error_body
-        
+
 class DebugError500(BaseResponse):
     "HTTP 500 error response with server traceback"
     def __init__(self, ex, tb):
@@ -78,8 +78,8 @@ class DebugError500(BaseResponse):
                                 ${tb}
                             </div>
                             """
-        
-        self.body = Template(error_500_template).render(ex = ex.__repr__(), tb = tb).encode('utf-8')
+
+        self.body = Template(error_500_template).render(ex=ex.__repr__(), tb=tb).encode('utf-8')
 
 class XResponse(BaseResponse):
     " Ajax response, return a JSON object "
@@ -89,7 +89,7 @@ class XResponse(BaseResponse):
         self.status = 200 # 200 OK, it's default, but anyway...
         self.headerlist = [('Content-type', 'application/x-javascript')]
         self.charset = 'utf-8'
-        
+
         # Set and unset cookies
         # Set cookies
         set_cookies_dict = response_dict.get(SET_COOKIES)
@@ -99,17 +99,15 @@ class XResponse(BaseResponse):
                 logging.debug('Try to set cookie %s to value %s' % (cookie, set_cookies_dict[cookie]))
                 self.set_cookie(cookie, str(set_cookies_dict[cookie]))
             response_dict.pop(SET_COOKIES)
-        
+
         # Unset cookies
         unset_cookies_dict = response_dict.get(UNSET_COOKIES)
         if unset_cookies_dict:
             for cookie in unset_cookies_dict:
                 self.delete_cookie(cookie)
             response_dict.pop(UNSET_COOKIES)
-        
-        
-        
         self.body = json.dumps(response_dict)
+
 
 # Specify decorator for ajax response controller functions
 # Usage:

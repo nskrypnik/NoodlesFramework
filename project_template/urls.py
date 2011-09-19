@@ -11,11 +11,11 @@ def get_map():
     map = Mapper()
     # Add routes here
     urlmap(map, [
-                 
+
                 ('/', 'controllers.index'),
                 #('/route/url', 'controllerName.actionName')     
             ])
-    
+
     # Old style map connecting 
     #map.connect('Route_name', '/route/url', controller='controllerName', action='actionName')
 

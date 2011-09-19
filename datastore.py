@@ -8,6 +8,7 @@ from noodles.redisconn import RedisConn
 import re, logging, copy
 import json
 import os
+import hashlib
 
 non_record = re.compile(r'__\w+__')
 
@@ -49,7 +50,11 @@ class Value(object):
     
     def __set__(self, instance, value):
         valuedict = instance.__instdict__
-        valuedict[self.key] = self.type(value)
+        try:
+            valuedict[self.key] = self.type(value)
+        except:
+            logging.info( 'could not save key %s with value %s as type %s'%(self.key,value,self.type))
+            raise
 
 
 class DateValue(Value):
@@ -61,10 +66,11 @@ class Model(object):
     # static model parameters
     __structure__ = {}
     __collection__ = {} # Collection name for Mongo DB
-    
-    id = Value(int)
-    
+    id = Value(str)
+    __salt__ = None
     def __init__(self, valuedict=None, embedded=False, **kwargs):
+        #we might use salt to make our sequence key for this object more interesting
+        if 'salt' in kwargs: self.__salt__ = kwargs['salt']
         classname = self.__class__.__name__        
         self.__init_structure__(classname, valuedict, **kwargs)
         self.collection_name = self.__collection__[classname]        
@@ -93,7 +99,8 @@ class Model(object):
             self.__instdict__ = copy.deepcopy(self.__structure__[classname])
         
         for k in kwargs:
-            if k in self.__instdict__:
+            if k=='salt': continue
+            elif k in self.__instdict__:
                 if hasattr(kwargs[k], 'get_values'):
                     self.__instdict__[k] = kwargs[k].get_values()
                 else:
@@ -108,11 +115,12 @@ class Model(object):
             return
         if not self.id:
             new_id = RedisConn.incr(':'.join([REDIS_NAMESPACE, self.__class__.__name__.lower() + '_key']))
-            self.id = new_id
+            if self.__salt__:
+                self.id = hashlib.md5(str(new_id)+self.__salt__).hexdigest()
+            else:
+                self.id = new_id
 #        print ':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), json.dumps(self.__instdict__)
         RedisConn.set(':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), json.dumps(self.__instdict__))
-#        print '==============================================================================================='
-#        print json.dumps(self.__instdict__)
         #self.save_redis_recursive(':'.join([self.collection_name, str(self.id)]), self.__instdict__)        
 
             
@@ -138,11 +146,15 @@ class Model(object):
         return copy.deepcopy(self.__instdict__)
     
     @classmethod
-    def get(cls, id, storage = None): # storage=None for backword capability 
+    def get(cls, id, storage = None,salt=None): # storage=None for backword capability 
         "Get object from Redis storage by ID"
+        if salt:
+            idtoget = hashlib.md5(id+salt).hexdigest()
+        else:
+            idtoget = id
         # First try to find object by Id
         # example: gameserver:scratchgames:101
-        inst_data = RedisConn.get(':'.join([REDIS_NAMESPACE, cls.get_collection_name(), str(id)]))
+        inst_data = RedisConn.get(':'.join([REDIS_NAMESPACE, cls.get_collection_name(), str(idtoget)]))
         if not inst_data: # No objects with such ID
             raise DoesNotExist('No model in Redis srorage with such id')
         else:

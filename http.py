@@ -96,7 +96,7 @@ class XResponse(BaseResponse):
         logging.debug('response_dict is %s. Set-cookies dict is %s' % (response_dict, set_cookies_dict))
         if set_cookies_dict:
             for cookie in set_cookies_dict:
-                logging.debug('Try to set cookie %s to value %i' % (cookie, set_cookies_dict[cookie]))
+                logging.debug('Try to set cookie %s to value %s' % (cookie, set_cookies_dict[cookie]))
                 self.set_cookie(cookie, str(set_cookies_dict[cookie]))
             response_dict.pop(SET_COOKIES)
         

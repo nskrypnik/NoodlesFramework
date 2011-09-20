@@ -8,6 +8,7 @@ from noodles.redisconn import RedisConn
 import re, logging, copy
 import json
 import os
+import hashlib
 
 non_record = re.compile(r'__\w+__')
 
@@ -23,33 +24,37 @@ class DoesNotExist(Exception):
 
 class Value(object):
     "Single value in our data storage"
-    
+
     __isvalue__ = True
-    
-    def __init__(self, type_of_value = None):
+
+    def __init__(self, type_of_value=None):
         if type_of_value: self.type = type_of_value
         else: self.type = str
-    
+
     def set_key(self, key):
         self.key = key
-    
+
     def typing(self, value):
         " If value is None it returns None, else value value in proper type"
         if value != None: return self.type(value)
         else: return None
-    
+
     def get_default(self):
         return None
-    
+
     def __get__(self, instance, owner):
         valuedict = instance.__instdict__
         if valuedict:
             return self.typing(valuedict[self.key])
-        else: return self        
-    
+        else: return self
+
     def __set__(self, instance, value):
         valuedict = instance.__instdict__
-        valuedict[self.key] = self.type(value)
+        try:
+            valuedict[self.key] = self.type(value)
+        except:
+            logging.info( 'could not save key %s with value %s as type %s'%(self.key,value,self.type))
+            raise
 
 
 class DateValue(Value):
@@ -61,15 +66,16 @@ class Model(object):
     # static model parameters
     __structure__ = {}
     __collection__ = {} # Collection name for Mongo DB
-    
-    id = Value(int)
-    
+    id = Value(str)
+    __salt__ = None
     def __init__(self, valuedict=None, embedded=False, **kwargs):
+        #we might use salt to make our sequence key for this object more interesting
+        if 'salt' in kwargs: self.__salt__ = kwargs['salt']
         classname = self.__class__.__name__        
         self.__init_structure__(classname, valuedict, **kwargs)
-        self.collection_name = self.__collection__[classname]        
+        self.collection_name = self.__collection__[classname]
         self.embedded = embedded
-    
+
     def __init_structure__(self, classname, valuedict=None, **kwargs):
         # create dictionary for model instance
         self.__instdict__ = {}
@@ -91,31 +97,33 @@ class Model(object):
             self.__instdict__ = valuedict
         else:
             self.__instdict__ = copy.deepcopy(self.__structure__[classname])
-        
+
         for k in kwargs:
-            if k in self.__instdict__:
+            if k=='salt': continue
+            elif k in self.__instdict__:
                 if hasattr(kwargs[k], 'get_values'):
                     self.__instdict__[k] = kwargs[k].get_values()
                 else:
                     self.__instdict__[k] = kwargs[k]
             else:
                 raise Exception('There is no such value \'%s\' in %s model.' % (k, classname))
-    
-    def save(self, storage = None):
+
+    def save(self, storage=None):
         " Save object to redis storage"
         if self.embedded:
             logging.warning('You should save embedded objects with high level object')
             return
         if not self.id:
             new_id = RedisConn.incr(':'.join([REDIS_NAMESPACE, self.__class__.__name__.lower() + '_key']))
-            self.id = new_id
+            if self.__salt__:
+                self.id = hashlib.md5(str(new_id)+self.__salt__).hexdigest()
+            else:
+                self.id = new_id
 #        print ':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), json.dumps(self.__instdict__)
         RedisConn.set(':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), json.dumps(self.__instdict__))
-#        print '==============================================================================================='
-#        print json.dumps(self.__instdict__)
         #self.save_redis_recursive(':'.join([self.collection_name, str(self.id)]), self.__instdict__)        
 
-            
+
     @classmethod
     def get_structure(cls):
         structure = cls.__structure__.get(cls.__name__)
@@ -124,7 +132,7 @@ class Model(object):
             cls_inst = cls()
             return cls.__structure__.get(cls.__name__)
         return structure
-    
+
     @classmethod
     def get_collection_name(cls):
         classname = cls.__name__
@@ -133,47 +141,51 @@ class Model(object):
             cls.__collection__[classname] = classname.lower() + 's'
             return cls.__collection__[classname]
         return collection_name
-    
+
     def get_values(self):
         return copy.deepcopy(self.__instdict__)
-    
+
     @classmethod
-    def get(cls, id, storage = None): # storage=None for backword capability 
+    def get(cls, id, storage = None,salt=None): # storage=None for backword capability 
         "Get object from Redis storage by ID"
+        if salt:
+            idtoget = hashlib.md5(id+salt).hexdigest()
+        else:
+            idtoget = id
         # First try to find object by Id
         # example: gameserver:scratchgames:101
-        inst_data = RedisConn.get(':'.join([REDIS_NAMESPACE, cls.get_collection_name(), str(id)]))
+        inst_data = RedisConn.get(':'.join([REDIS_NAMESPACE, cls.get_collection_name(), str(idtoget)]))
         if not inst_data: # No objects with such ID
             raise DoesNotExist('No model in Redis srorage with such id')
         else:
             # Copy structure of Class to new dictionary
             instance_dict = json.loads(inst_data.__str__())
-            return cls(valuedict = instance_dict)
-    
+            return cls(valuedict=instance_dict)
+
     @classmethod
-    def delete(cls, id, storage = None): # storage=None for backword capability
+    def delete(cls, id, storage=None): # storage=None for backword capability
         "Delete key specified by ``id``"
         result = RedisConn.delete(':'.join([REDIS_NAMESPACE, cls.get_collection_name(), str(id)]))
-        logging.debug('delete::______________ %s'%result)
-        return result 
-      
+        logging.debug('delete::______________ %s' % result)
+        return result
+
 class Node(Value):
     " Use it for embedd objects to model "
-    
+
     def __init__(self, model_class):
         self.model = model_class
-    
+
     def __get__(self, instance, owner):
         valuedict = instance.__instdict__
         if valuedict:
             # TODO: Optimiize this!
-            model_inst = self.model(valuedict = valuedict[self.key])
+            model_inst = self.model(valuedict=valuedict[self.key])
             return model_inst
         else: return self
-    
+
     def __set__(self, instance, value):
         pass
-    
+
     def get_default(self):
         model_inst = self.model()
         return model_inst.get_structure()

@@ -20,9 +20,9 @@ class WebSocket(object):
         self.handler = f
         self.args = args
         self.kwargs = kwargs
-    
+
     def __call__(self, env, start_response):
-        start_response('200 OK',[('Content-Type','application/json')])
+        start_response('200 OK', [('Content-Type', 'application/json')])
         #print env
         get_websocket = env.get('wsgi.get_websocket')
         ws = get_websocket()

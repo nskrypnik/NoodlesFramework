@@ -6,4 +6,3 @@ Created on Jul 29, 2011
 """
 from events import Event
 
-        

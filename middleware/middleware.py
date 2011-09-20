@@ -14,9 +14,9 @@ class BaseMiddleware(object):
 
 class AppMiddlewares(list):
     "Class represents application middlewares"
-    
+
     def __init__(self, MIDDLEWARES):
-        "Give MIDDLEWARES - raw list of middlewares and stores dict of classes itself" 
+        "Give MIDDLEWARES - raw list of middlewares and stores dict of classes itself"
         super(AppMiddlewares, self).__init__()
         MIDDLEWARES.reverse()
         for middleware_path in MIDDLEWARES:

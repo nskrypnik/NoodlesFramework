@@ -137,7 +137,7 @@ Sec-WebSocket-Draft: 2
         try:
             key_number = int(re.sub("\\D", "", key_value))
         except ValueError:
-            raise BadRequest('Invalid key: %r' % (key_value, ))
+            raise BadRequest('Invalid key: %r' % (key_value,))
         spaces = re.subn(" ", "", key_value)[1]
 
         if key_number % spaces != 0:
@@ -280,12 +280,12 @@ Sec-WebSocket-Draft: 2
         if not line:
             raise WebSocketError('Server unexpectedly closed the connection')
         if not line.endswith('\r\n'):
-            raise WebSocketError('Invalid response from server: %r' % (line, ))
+            raise WebSocketError('Invalid response from server: %r' % (line,))
 
         if line[:8] == 'HTTP/1.1':
             line = line[8:].strip()
         else:
-            raise WebSocketError('Invalid response from server: %r' % (line, ))
+            raise WebSocketError('Invalid response from server: %r' % (line,))
 
         code = line.split(' ', 1)[0]
         if code != '101':
@@ -299,7 +299,7 @@ Sec-WebSocket-Draft: 2
         while True:
             line = self.rfile.readline()
             if not line.endswith('\r\n'):
-                raise WebSocketError('Invalid response from server: %r' % (line, ))
+                raise WebSocketError('Invalid response from server: %r' % (line,))
             line = line.strip()
             if not line:
                 break

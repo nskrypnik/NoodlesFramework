@@ -11,7 +11,7 @@ import os
 import hashlib
 
 non_record = re.compile(r'__\w+__')
-
+from config import *
 try:
     from config import REDIS_NAMESPACE
 except ImportError:
@@ -68,9 +68,11 @@ class Model(object):
     __collection__ = {} # Collection name for Mongo DB
     id = Value(str)
     __salt__ = None
-    def __init__(self, valuedict=None, embedded=False, **kwargs):
+    def __init__(self, valuedict=None, embedded=False, expire=None, **kwargs):
+        
         #we might use salt to make our sequence key for this object more interesting
         if 'salt' in kwargs: self.__salt__ = kwargs['salt']
+        self.expire = expire
         classname = self.__class__.__name__        
         self.__init_structure__(classname, valuedict, **kwargs)
         self.collection_name = self.__collection__[classname]
@@ -121,6 +123,8 @@ class Model(object):
                 self.id = new_id
 #        print ':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), json.dumps(self.__instdict__)
         RedisConn.set(':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), json.dumps(self.__instdict__))
+        if self.expire != None:
+            RedisConn.expire(':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), self.expire)
         #self.save_redis_recursive(':'.join([self.collection_name, str(self.id)]), self.__instdict__)        
 
 
@@ -166,9 +170,26 @@ class Model(object):
     def delete(cls, id, storage=None): # storage=None for backword capability
         "Delete key specified by ``id``"
         result = RedisConn.delete(':'.join([REDIS_NAMESPACE, cls.get_collection_name(), str(id)]))
-        logging.debug('delete::______________ %s' % result)
         return result
+    
+    #return flag to update client cookie
+    def update(self, storage=None,**kwargs): # storage=None for backword capability
+        '''update time expire'''
+        print 'updating::'
+        id = ':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)])
+        
+        if 'expire' in kwargs:
+            print TIME_TO_OVERWRITE_CLIENT_COOKIE,RedisConn.ttl(id)
+            if  TIME_TO_OVERWRITE_CLIENT_COOKIE>RedisConn.ttl(id):
+                result = RedisConn.expire(id, kwargs['expire'])
+                logging.info('UPDATE LIFETIME TO: %s SECONDS'%kwargs['expire'])
+                return result
+            else:
+                logging.debug('non_update_SESSION')
 
+        else:
+            raise Exception('unknown action!!!')
+ 
 class Node(Value):
     " Use it for embedd objects to model "
 

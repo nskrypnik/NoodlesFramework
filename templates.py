@@ -1,15 +1,11 @@
 '''
 filedesc: mako templating for our server
 '''
-
-from mako.template import Template
 from mako.lookup import TemplateLookup
 from noodles.http import Response
 from config import TEMPLATE_DIRS, MAKO_TMP_DIR
 from operator import isCallable
 import config
-import os
-import logging
 
 # Specify application lookup
 appLookup = TemplateLookup(directories=TEMPLATE_DIRS,

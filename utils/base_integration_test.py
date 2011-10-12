@@ -1,6 +1,7 @@
 """
 Base Selenium test methods
 """
+import logging
 import unittest
 import urllib2
 from selenium.webdriver.common.by import By

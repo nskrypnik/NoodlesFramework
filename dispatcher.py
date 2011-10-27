@@ -33,7 +33,7 @@ class Dispatcher(object):
         for controller in controllers:
             # TODO: Enhance import logic here to import controllers like mod1.mod2
             # Import all controllers
-            base_mod = __import__(controller, globals(), locals())
+            base_mod = __import__(controller, globals(), locals(), [], -1)
             mod = sys.modules.get(controller)
             if not mod: mod = base_mod
             self.controllers[controller] = mod

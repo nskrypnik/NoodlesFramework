@@ -8,7 +8,6 @@ def urlmap(map, url_rules):
     " Util for make url rules easy "
     for rule in url_rules:
         params = {}
-
         if len(rule) == 2:
             url_pattern, controller_dot_action = rule
         elif len(rule) == 3:
@@ -16,18 +15,15 @@ def urlmap(map, url_rules):
         else:
             raise Exception('Wrong urlmap params!')
 
-        controller, action = controller_dot_action.split('.')
-
+        controller, action = controller_dot_action.split('#')
         kwargs = {}
         kwargs.update(params)
         kwargs['controller'] = controller
         kwargs['action'] = action
-
         if url_pattern[-1] == '/':
             url_pattern2 = url_pattern[:-1]
         else:
             url_pattern2 = url_pattern + '/'
-
         map.connect(None, url_pattern, **kwargs)
         map.connect(None, url_pattern2, **kwargs)
 

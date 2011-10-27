@@ -3,9 +3,7 @@ filedesc: Controller for serving static content
 '''
 import os
 from noodles.http import BaseResponse, Error404
-from config import STATIC_ROOT
 
-import logging
 
 # Mime types dictionary, contain pairs: key - file extansion,
 # value - mime type
@@ -41,16 +39,16 @@ def toInt(val):
     if val == '': return 0
     return int(val)
 
-def index(request, path_info):
-    parital_response = False
 
+def index(request, path_info, path):
+    parital_response = False
     path_info = path_info.replace('%28', '(').replace('%29', ')').replace('%20', ' ')
     response = BaseResponse()
     # define a file extansion
     base, ext = os.path.splitext(path_info) # Get the file extansion
     mime_type = MIME_TYPES.get(ext)
     if not mime_type: raise Exception("unknown doc, or something like that :-P: %s" % ext)
-    static_file_path = os.path.join(STATIC_ROOT, path_info)
+    static_file_path = os.path.join(path, path_info)
     # Check if this path exists
     if not os.path.exists(static_file_path):
         error_msg = "<h1>Error 404</h1> No such file STATIC_ROOT/%s" % path_info

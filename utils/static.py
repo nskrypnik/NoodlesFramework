@@ -46,7 +46,7 @@ def index(request, path_info, path):
     response = BaseResponse()
     # define a file extansion
     base, ext = os.path.splitext(path_info) # Get the file extansion
-    mime_type = MIME_TYPES.get(ext)
+    mime_type = MIME_TYPES.get(ext, 'text/plain')
     if not mime_type: raise Exception("unknown doc, or something like that :-P: %s" % ext)
     static_file_path = os.path.join(path, path_info)
     # Check if this path exists

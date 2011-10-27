@@ -14,7 +14,7 @@ def urlmap(map, url_rules):
             url_pattern, controller_dot_action, params = rule
         else:
             raise Exception('Wrong urlmap params!')
-
+        print controller_dot_action
         controller, action = controller_dot_action.split('#')
         kwargs = {}
         kwargs.update(params)
@@ -30,5 +30,5 @@ def urlmap(map, url_rules):
 def direct_to_template(url, templatename, context={}):
     params = {'templatename': templatename}
     params.update(context)
-    return (url, '.'.join([Templater._name, 'render']), params)
+    return (url, '#'.join([Templater._name, 'render']), params)
 

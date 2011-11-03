@@ -14,7 +14,6 @@ def urlmap(map, url_rules):
             url_pattern, controller_dot_action, params = rule
         else:
             raise Exception('Wrong urlmap params!')
-        print controller_dot_action
         controller, action = controller_dot_action.split('#')
         kwargs = {}
         kwargs.update(params)

@@ -3,7 +3,7 @@ filedesc: request dispatch logic
 '''
 from noodles.http import Error404
 from noodles.templates import Templater
-import sys, os, urllib
+import sys, os, urllib, logging
 
 # Add standard controllers dir to PYTHON_PATH directory
 sys.path.append(os.path.join(os.path.dirname(__file__), 'controllers'))
@@ -43,7 +43,9 @@ class Dispatcher(object):
     def get_callable(self, request):
         " Returns callable object "
         route_res = self.mapper.match(request.path)
-        if not route_res: return self.not_found(request)
+        if not route_res: 
+            logging.debug( 'cannot find route for %s'%request.path)
+            return self.not_found(request)
         # Get controller name and action from routes
         controller_name = route_res.get('controller')
         action = route_res.get('action')

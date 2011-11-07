@@ -58,7 +58,7 @@ class Error404(BaseResponse):
         self.status = 404
         self.headerlist = [('Content-type', 'text/html')]
         self.charset = 'utf-8'
-        self.text = error_body
+        self.text = unicode(error_body)
 
 class DebugError500(BaseResponse):
     "HTTP 500 error response with server traceback"

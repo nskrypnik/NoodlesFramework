@@ -1,7 +1,7 @@
 '''
 filedesc: Controller for serving static content
 '''
-import os
+import os,logging
 from noodles.http import BaseResponse, Error404
 
 
@@ -52,6 +52,7 @@ def index(request, path_info, path):
     # Check if this path exists
     if not os.path.exists(static_file_path):
         error_msg = "<h1>Error 404</h1> No such file STATIC_ROOT/%s" % path_info
+        logging.debug( 'not found: %s'%static_file_path)
         return Error404(error_msg)
     # configure response
     static_file = open(static_file_path, 'rb') # Open file

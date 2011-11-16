@@ -3,7 +3,7 @@ filedesc: Controller for serving static content
 '''
 import os,logging
 from noodles.http import BaseResponse, Error404
-
+from email.Utils import formatdate
 
 # Mime types dictionary, contain pairs: key - file extansion,
 # value - mime type
@@ -41,7 +41,7 @@ def toInt(val):
 
 
 def index(request, path_info, path):
-    parital_response = False
+    partial_response = False
     path_info = path_info.replace('%28', '(').replace('%29', ')').replace('%20', ' ')
     response = BaseResponse()
     # define a file extansion
@@ -67,7 +67,7 @@ def index(request, path_info, path):
         if len(range_bytes) > 2: raise Exception('Wrong http Range parameter "%s"' % request_range)
         content_offset = toInt(range_bytes[0])
         content_end = toInt(range_bytes[1])
-        parital_response = True
+        partial_response = True
 
 
     static_content = static_file.read()
@@ -76,14 +76,14 @@ def index(request, path_info, path):
 
 
     response.charset = 'utf-8'
-
-    if parital_response:
+    response.headerlist=[]
+    response.headerlist.append(('Content-type', mime_type))
+    if partial_response:
         response.status = 206
-        response.headerlist = [('Content-type', mime_type),
-        ('Content-Range', 'bytes %i-%i/%i' % (content_offset, content_end, len(static_content)))]
-
-    else:
-        response.headerlist = [('Content-type', mime_type)]
+        response.headerlist.append(('Content-Range', 'bytes %i-%i/%i' % (content_offset, content_end, len(static_content))))
+    st = os.stat(static_file_path)
+    response.headerlist.append(('Last-modified',formatdate(st.st_mtime)))
+    response.headerlist.append(('Cache-control','max-age=626560472'))
 
     # This seems to be clear, return this response object
 

@@ -99,6 +99,11 @@ class WebSocketHandler(object):
                 traceback = f.formatException(sys.exc_info())
                 logging.error('Servlet fault: \n%s' % traceback)
                 break
+            #this is a stub to make dynamic channel open/close stuff be ignored for now.
+            jd = json.loads(data)
+            if jd['chid'] and jd['pkg']=='open':
+                logging.info('IGNORING DYNAMIC OPEN COMMAND %s'%data)
+                continue
 
             if data:
                 try:

@@ -8,15 +8,15 @@ filedesc: web socket session object definitino
 from gevent.coros import Semaphore
 from gevent.queue import Queue
 from noodles.redisconn import RedisConn
-
 import gevent
+import logging
+import json
 
 class WSSession(object):
     """
         Represent all information about web socket session, and provide
         interface to send data through web socket
     """
-
     _collection = {}
 
     @classmethod

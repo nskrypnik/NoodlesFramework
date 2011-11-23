@@ -73,7 +73,6 @@ class SessionMiddleware(BaseMiddleware):
                 # callable returns native noodlse Response object
                 # let's update it cookies
                 response.set_cookie(SESSION_COOKIE, str(self.request.session.id))
-
             self.request.session.save()
             return response
 

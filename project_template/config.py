@@ -5,6 +5,7 @@ filedesc: default boilerplate config for a new noodles project
 import os
 
 DEBUG = True
+TESTING = True
 
 # Specify the server port
 PORT = 8090
@@ -40,3 +41,12 @@ MIDDLEWARES = [
                ]
 
 SERVER_LOGTYPE = 'default'
+####Mail parameters
+NOODLES_ERROR_RECIPIENT = [
+                           #List with default error mail recipient 
+                           ]
+NOODLES_ERROR_SENDER = 'noodles_error@mail.domain.com'
+MAIL_SERVER = 'smtp.example.com'
+MAIL_PORT = 587
+MAIL_LOGIN = 'your smtp mail login'
+MAIL_PASSWORD = 'your smtp mail password'

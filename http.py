@@ -60,16 +60,25 @@ class Error404(BaseResponse):
         self.charset = 'utf-8'
         self.text = unicode(error_body)
 
-class DebugError500(BaseResponse):
-    "HTTP 500 error response with server traceback"
-    def __init__(self, ex, tb):
-        super(DebugError500, self).__init__()
+class Error500(BaseResponse):
+    """
+    HTTP 500 error response with server traceback if DEBUG
+    """
+    def __init__(self, ex=None, tb=None):
+        super(Error500, self).__init__()
         self.status = 500
         self.headerlist = [('Content-type', 'text/html')]
         self.charset = 'utf-8'
-        tb = '<br />'.join(tb.split('\n'))
+        if tb:
+            tb = '<br />'.join(tb.split('\n'))
+        else:
+            tb = "Please, load this page later"
+        if ex:
+            ex = ex.__repr__()
+        else:
+            ex = "Sorry, an error occured"
         error_500_template = """
-                            <h1>Internal Noodles error</h1>
+                            <h1>500 error</h1>
                             <div style="font-size:125%"> 
                                 ${ex} 
                             </div>
@@ -78,8 +87,9 @@ class DebugError500(BaseResponse):
                                 ${tb}
                             </div>
                             """
+        self.body = Template(error_500_template).render(ex=ex.__repr__(),
+                                                        tb=tb).encode('utf-8')
 
-        self.body = Template(error_500_template).render(ex=ex.__repr__(), tb=tb).encode('utf-8')
 
 class XResponse(BaseResponse):
     " Ajax response, return a JSON object "
@@ -93,7 +103,7 @@ class XResponse(BaseResponse):
         # Set and unset cookies
         # Set cookies
         set_cookies_dict = response_dict.get(SET_COOKIES)
-        logging.debug('response_dict is %s. Set-cookies dict is %s' % (response_dict, set_cookies_dict))
+        logging.debug('response_dict2 is %s. Set-cookies dict is %s' % (response_dict, set_cookies_dict))
         if set_cookies_dict:
             for cookie in set_cookies_dict:
                 logging.debug('Try to set cookie %s to value %s' % (cookie, set_cookies_dict[cookie]))

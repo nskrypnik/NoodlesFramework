@@ -40,7 +40,7 @@ class Event(object):
 
     def firing(self, event_data={}):
         event_msg = {'event_id': self.id, 'event_data': event_data}
-        RedisConn.publish(NOODLES_EVENTS_CHANNEL, json.dumps(event_msg))
+        RedisConn.publish(NOODLES_EVENTS_CHANNEL, event_msg)
         print 'Event is firing'
 
     def unregister(self):

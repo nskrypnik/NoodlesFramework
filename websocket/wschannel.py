@@ -35,5 +35,3 @@ class BaseChannelHandler(object):
                 raise Exception('Unknown operation on channel')
         else:
             self.default(data)
-
-

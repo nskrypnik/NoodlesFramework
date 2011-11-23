@@ -1,13 +1,19 @@
-# -*- coding: utf-8 -*-
-'''
-filedesc: base handler class is defined from which a websocket channel implementation is derived
-'''
+"""
+Base handler class is defined from which a web socket channel 
+implementation is derived
+"""
+from config import WS_CHANNELS, DEBUG
 from gevent.event import Event
+from noodles.geventwebsocket.handler import WebSocketHandler
+from noodles.utils.mailer import MailMan
 from wssession import WSSession
-
+import json
 import logging
 import sys
-import json
+
+
+
+
 
 try:
     from config import ENCODING
@@ -24,12 +30,10 @@ class MultiChannelWSError(Exception):
     pass
 
 class WebSocketMessage(object):
-
     def __init__(self, data):
         if type(data) == dict:
             self.data = data
             return
-
         self.raw_data = data.encode(ENCODING)
         try:
             self.data = json.loads(self.raw_data)
@@ -38,13 +42,11 @@ class WebSocketMessage(object):
 
     def __getattr__(self, name):
         if name == 'raw_data':
-            self.raw_data = json.dumps(self.data)
+            self.raw_data = self.data
             return self.raw_data
 
 
-
-
-class WebSocketHandler(object):
+class MultiSocketHandler(WebSocketHandler):
     """
         Abstract class for implementing server side web socket logic.
         
@@ -82,18 +84,14 @@ class WebSocketHandler(object):
         self.close_event = Event()
 
     def __call__(self, env, start_response):
-        start_response('200 OK', [('Content-Type', 'application/json')])
-        get_websocket = env.get('wsgi.get_websocket')
-        ws = get_websocket()
-        ws.do_handshake()
+        ws = env.get('wsgi.websocket')
         if not ws: raise WebSocketError('No server socket instance!')
-        self.ws = ws
-
+        self.websocket = ws
         self.onopen()
         # Endless event loop
         while 1:
             try:
-                data = self.ws.receive()
+                data = self.websocket.wait()
             except Exception as e:
                 f = logging.Formatter()
                 traceback = f.formatException(sys.exc_info())
@@ -104,19 +102,16 @@ class WebSocketHandler(object):
             if jd['chid'] and jd['pkg']=='open':
                 logging.info('IGNORING DYNAMIC OPEN COMMAND %s'%data)
                 continue
-
             if data:
                 try:
                     self.onmessage(WebSocketMessage(data))
                 except Exception as e:
-                    self.onerror(e)
+                    self.onerror(json.dumps(str(e), separators=(',',':')))
             else:
                 logging.debug('Web Socket is disconnected')
                 self.close_event.set()
-
             if self.close_event.is_set():
                 break
-
         self.onclose()
 
 
@@ -130,21 +125,24 @@ class WebSocketHandler(object):
         pass
 
     def onerror(self, e):
-        pass
-
-    def send(self, data):
-        if type(data) == dict:
-            data = json.dumps(data)
+        """
+        Send here Exception and traceback by Error channel
+        """
+        f = logging.Formatter()
+        traceback = f.formatException(sys.exc_info())
+        if DEBUG:
+            err_message = {'chid': WS_CHANNELS['ERROR_CHID'],
+                       'pkg': {'exception': e.__repr__(),'tb': traceback}}
         else:
-            if type(data) != str:
-                raise WebSocketSendError('Sent value must be string or dictionary type')
-        try:
-            self.ws.send(data)
-        except:
-            # seems to be disconnected
-            self.onclose()
+            err_message = {'chid': WS_CHANNELS['ERROR_CHID'],
+                       'pkg': {'exception': 'error 500',
+                               'tb': 'an error occured'}}
+            MailMan.mail_send(MailMan(),e.__repr__(), traceback)
+        self.send(json.dumps(err_message, separators=(',',':')))
+        print traceback
 
-class MultiChannelWS(WebSocketHandler):
+
+class MultiChannelWS(MultiSocketHandler):
     """
         Use this class to implement virtual channels over web socket.
         To use it, inherit class from this and override init_channel function,
@@ -161,17 +159,21 @@ class MultiChannelWS(WebSocketHandler):
     """
 
     class ChannelSender(object):
-
+        """
+        Send channel message over websocket
+        """
         def __init__(self, chid, _wsh):
             self.chid = chid
             self._wsh = _wsh
 
         def __call__(self, data):
+            if type(data) != dict:
+                raise TypeError("data is %s not dict" % type(data))
             package_to_send = {'chid': self.chid,
                                'pkg': data,
                                'session_params': self._wsh.session.params,
                                }
-            self._wsh.send(package_to_send)
+            self._wsh.send(json.dumps(package_to_send))
 
     def __init__(self, **kwargs):
         super(MultiChannelWS, self).__init__(**kwargs)
@@ -183,12 +185,12 @@ class MultiChannelWS(WebSocketHandler):
         raise NotImplementedError('You must specify this function')
 
     def register_channel(self, chid, channel_handler_class):
+        print channel_handler_class
         "Registers new channel with channel id - chid and channel handler class - channel_handler_class"
         channel_handler = channel_handler_class(request=self.request)
         channel_handler.send = self.ChannelSender(chid, self)
         channel_handler.session = self.session
         self.channel_handlers[chid] = channel_handler
-
 
     def onopen(self):
         self.init_channels()
@@ -203,12 +205,8 @@ class MultiChannelWS(WebSocketHandler):
         chid = msg.data.get('chid')
         if chid == None:
             raise MultiChannelWSError('No such channel ID in request')
-
         channel_handler = self.channel_handlers.get(chid)
         if not channel_handler:
             raise MultiChannelWSError('No such channel')
-
         channel_handler.onmessage(WebSocketMessage(msg.data['pkg']))
-
-
 

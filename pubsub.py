@@ -1,30 +1,34 @@
 # -*- coding: utf-8 -*-
-'''
-filedesc: Layer for implementation of Publisher/Subscription pattern. is done via redis PUBLISH/SUBSCRIBE
-'''
+"""
+Layer for implementation of Publisher/Subscription pattern.
+Is done via redis PUBLISH/SUBSCRIBE
+"""
 
+from gevent.event import Event
 import logging
-import redis, json, gevent
+import redis
+import json
+import gevent
 try:
     from config import REDIS_HOST
 except ImportError:
     REDIS_HOST = 'localhost'
-from gevent.event import Event
+
 
 class PubSubAgent(object):
     """
-        Implement default Publisher/Subscriber agent. It has two functions - subscriber and
-        publisher which are launched through greenlets.
-        To use it override publisher function for depth handling connection,
-        or just use this and specify pub_handler functions in instance
+    Implement default Publisher/Subscriber agent. It has two
+    functions - subscriber and publisher which are launched through greenlets
+    To use it override publisher function for depth handling connection,
+    or just use this and specify pub_handler functions in instance
     """
     def __init__(self, channel, pub_handler=None, default_term=None):
         global REDIS_HOST
         self.channel = channel
 
         # Deprecated use of pub_handler, now just override pub_handler function
-        if pub_handler: self.pub_handler = pub_handler
-
+        if pub_handler:
+            self.pub_handler = pub_handler
         self.default_term = default_term
         self.terminate_event = Event()
         self.begin_event = Event()
@@ -51,23 +55,27 @@ class PubSubAgent(object):
         self.pub_conn.publish(self.channel, msg)
 
     def publisher(self):
-        " This function listen opened ws socket, get JSON msg and publish it to self.chanel"
+        """
+        This function listen opened ws socket, get JSON msg and publish
+        it to self.chanel
+        """
         pub_conn = redis.Redis()
         self.begin_event.wait()
         while 1:
             try:
                 msg = self.ws.receive()
-            except Exception as e: # Some error occures, logg exception and terminate agent
+            # Some error occures, logg exception and terminate agent
+            except Exception as e:
                 logging.error('Get exception %s' % e.__repr__())
                 self.ws.close()
                 self.terminate()
                 return
-            if msg: # Peer disconected
+            if msg:  # Peer disconected
                 msg = json.loads(msg)
                 if self.default_term:
                     if msg[self.default_term]:
                         self.ws.close()
-                        self.terminate() # send terminate_event event to subscriber
+                        self.terminate()  # send terminate event to subscriber
                         return
                 msg = self.pub_handler(msg)
                 logging.debug('Sent msg %s' % msg.__repr__())
@@ -89,12 +97,12 @@ class PubSubAgent(object):
         for msg in rc_sub.listen():
             if not self.begin_event.is_set():
                 self.begin_event.set()
-            #msg = listener.next()
             if msg['type'] == 'message':
                 try:
                     self.ws.send(msg['data'])
-                except Exception as e: # Seems to be disconnected
-                    logging.debug('Unsubscribe socket from channel no.%s ' % self.channel)
+                except Exception as e:  # Seems to be disconnected
+                    logging.debug('Unsubscribe socket from channel'
+                                  ' no.%s ' % self.channel)
                     self.ws.close()
                     self.terminate()
                     return
@@ -103,5 +111,6 @@ class PubSubAgent(object):
                 return
 
     def __call__(self, ws):
-        self.ws = ws # web socket instance
-        gevent.joinall([gevent.spawn(self.publisher), gevent.spawn(self.subscriber)])
+        self.ws = ws  # web socket instance
+        gevent.joinall([gevent.spawn(self.publisher),
+                        gevent.spawn(self.subscriber)])

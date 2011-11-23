@@ -43,27 +43,21 @@ class Dispatcher(object):
     def get_callable(self, request):
         " Returns callable object "
         route_res = self.mapper.match(request.path)
-        if not route_res: 
-            logging.debug( 'cannot find route for %s'%request.path)
-            return self.not_found(request)
+        #print route_res, 'routes_res'
+        if not route_res: return self.not_found(request)
         # Get controller name and action from routes
         controller_name = route_res.get('controller')
         action = route_res.get('action')
-
         controller = self.controllers.get(controller_name)
         if not controller: raise Exception('No such controller \'%s\'' % controller_name)
-
         # Prepare extra args for callable
-
         extra_args = route_res.copy() # copying all data from routes dictionary
         for k, v in extra_args.items():
             extra_args[k] = urllib.unquote(v).decode('utf8')
         # Delete controller and action items
         del extra_args['controller']; del extra_args['action']
         extra_args['request'] = request
-
         callable_obj = CallWrapper(controller, action, extra_args)
-
         return callable_obj
 
     def not_found(self, request):
@@ -76,5 +70,4 @@ class Dispatcher(object):
             def __call__(self):
                 " Genereate 404 server response here "
                 return Error404('<h1>Error 404. Can\'t find page</h1>')
-
         return NotFoundCallable(request)

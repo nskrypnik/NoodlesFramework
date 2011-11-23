@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-'''
-filedesc: redis connection wrapper which gives a soft error in case that noodles is run on a machine without redis
-'''
-import logging
+"""
+Redis connection wrapper which gives a soft error in case that
+noodles is run on a machine without redis
+"""
 from gevent.coros import RLock
+import logging
+
 
 class RedisImportError(Exception):
     pass
@@ -24,7 +26,9 @@ if redis:
 
 else:
     # Get warning and use dictionary wrapper
-    logging.warning('\n >>>>>> Redis-py is not intalled. Simple python dictionary is used instead <<<<< \n')
+    logging.warning('\n >>>>>> Redis-py is not intalled. Simple python'
+                    'dictionary is used instead <<<<< \n')
+
     class RedisConnWrapper(object):
 
         _db = {}
@@ -78,8 +82,9 @@ else:
                 self._db[set_key] = set()
             self._db[set_key].add(value)
 
-
         def __getattr__(self, name):
-            raise RedisImportError('You use dumb redis storage that doesn\'t support this function,\n you should install redis-server and redis-py')
+            raise RedisImportError('You use dumb redis storage that doesn\'t'
+               'support this function,\n you should install redis-server'
+               'and redis-py')
 
     RedisConn = RedisConnWrapper()

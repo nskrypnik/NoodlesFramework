@@ -1,16 +1,14 @@
-# -*- coding: utf-8 -*-
-'''
-filedesc: machinery for launching the wsgi server 
-@author: Niko Skrypnik
-'''
+"""
+Machinery for launching the wsgi server 
+"""
 from gevent import monkey
 from gevent.wsgi import WSGIServer
+from noodles.utils.mailer import MailMan
 monkey.patch_all()
 
 # Gevent-socketio lib
 from noodles.websockserver import server
-
-from noodles.http import Request, Response, DebugError500
+from noodles.http import Request, Response, Error500
 from noodles.dispatcher import Dispatcher
 from noodles.middleware import AppMiddlewares
 from config import URL_RESOLVER, CONTROLLERS, MIDDLEWARES, DEBUG
@@ -19,17 +17,19 @@ import logging
 import traceback
 import sys
 
+from gevent import pywsgi
+from noodles.geventwebsocket.handler import WebSocketHandler
+
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 resolver = __import__(URL_RESOLVER, globals(), locals())
 
 # Create an dispatcher instance
-dispatcher = Dispatcher(mapper=resolver.get_map(),
-                        controllers=CONTROLLERS
-                      )
+dispatcher = Dispatcher(mapper=resolver.get_map(), controllers=CONTROLLERS)
 
 # Load all midllewares for application
 app_middlewares = AppMiddlewares(MIDDLEWARES)
+
 
 # Our start point WSGI application
 def noodlesapp(env, start_response):
@@ -44,20 +44,21 @@ def noodlesapp(env, start_response):
     # Callable function must return Respone object
     for middleware in app_middlewares:
         callable_obj = middleware(callable_obj) # Hardcoded use of HTTP Session middleware
-
     try:
         response = callable_obj()
         return response(env, start_response)
     # Capture traceback here and send it if debug mode
     except Exception as e:
-        if DEBUG:
-            f = logging.Formatter()
-            traceback = f.formatException(sys.exc_info())
-            # Don't remove this print
-            print traceback # Show traceback in console
-            response = DebugError500(e, traceback)
-            return response(env, start_response)
-        #TODO: write production Error500 response
+        f = logging.Formatter()
+        traceback = f.formatException(sys.exc_info())
+        # Don't remove this print
+        print traceback # Show traceback in console
+        if DEBUG:            
+            response = Error500(e, traceback)
+        else:
+            response = Error500()
+            MailMan.mail_send(MailMan(),e.__repr__(), traceback)
+        return response(env, start_response)
 
 
 # Start server function, you may specify port number here
@@ -73,4 +74,3 @@ def startapp():
     else:
         s = SERVER_LOGTYPE
     server.WebSocketServer(('', PORT), noodlesapp, log=s).serve_forever()
-    #WSGIServer(('', PORT), noodlesapp).serve_forever()

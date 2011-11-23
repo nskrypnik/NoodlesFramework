@@ -98,11 +98,11 @@ class MultiSocketHandler(WebSocketHandler):
                 logging.error('Servlet fault: \n%s' % traceback)
                 break
             #this is a stub to make dynamic channel open/close stuff be ignored for now.
-            jd = json.loads(data)
-            if jd['chid'] and jd['pkg']=='open':
-                logging.info('IGNORING DYNAMIC OPEN COMMAND %s'%data)
-                continue
             if data:
+                jd = json.loads(data)
+                if jd['chid'] and jd['pkg']=='open':
+                    logging.info('IGNORING DYNAMIC OPEN COMMAND %s'%data)
+                    continue
                 try:
                     self.onmessage(WebSocketMessage(data))
                 except Exception as e:

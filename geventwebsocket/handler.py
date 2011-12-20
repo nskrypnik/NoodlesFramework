@@ -17,7 +17,7 @@ class WebSocketHandler(WSGIHandler):
     """ Automatically upgrades the connection to websockets. """
 
     GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-    SUPPORTED_VERSIONS = (7, 8)
+    SUPPORTED_VERSIONS = (7, 8, 13)
 
     def __init__(self, *args, **kwargs):
         self.websocket_connection = False
@@ -56,7 +56,8 @@ class WebSocketHandler(WSGIHandler):
         version = self.environ.get("HTTP_SEC_WEBSOCKET_VERSION")
         print "VERSION", version
 
-        if self.environ.get("HTTP_ORIGIN"):
+        if self.environ.get("HTTP_ORIGIN")\
+           and not int(version) in self.SUPPORTED_VERSIONS:
             print "OLD ", version
             self.websocket = WebSocketLegacy(self.socket, self.rfile, self.environ)
 

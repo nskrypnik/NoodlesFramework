@@ -1,8 +1,6 @@
 version_info = (0, 3, 0, 'dev')
 __version__ =  ".".join(map(str, version_info))
 
-try:
-    from noodles.geventwebsocket.websocket import WebSocketVersion7, WebSocketLegacy
-except ImportError:
-    import traceback
-    traceback.print_exc()
+__all__ = ['WebSocketHandler']
+
+from noodles.geventwebsocket.handler import WebSocketHandler

@@ -184,7 +184,6 @@ class MultiChannelWS(MultiSocketHandler):
             self._wsh.websocket.send(json.dumps(package_to_send))
 
     def __init__(self, **kwargs):
-        print kwargs
         super(MultiChannelWS, self).__init__(**kwargs)
         self.channel_handlers = {}
         self.session = WSSession()

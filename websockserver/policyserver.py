@@ -21,7 +21,7 @@ class FlashPolicyServer(StreamServer):
     def handle(self, socket, address):
         if self.noisy:
             print 'Accepted connection from %s:%s' % address
-        expected = '<policy-file-request/>'
+        expected = '<policy-file-request/>\x00'
         req = socket.makefile().read(len(expected))
         if req == expected:
             socket.sendall(self.policy)

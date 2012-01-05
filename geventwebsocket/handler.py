@@ -2,6 +2,7 @@ import base64
 import re
 import struct
 from hashlib import md5, sha1
+from socket import SHUT_WR
 from socket import error as socket_error
 from urllib import quote
 
@@ -14,6 +15,22 @@ class WebSocketHandler(WSGIHandler):
 
     GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
     SUPPORTED_VERSIONS = ('13', '8', '7')
+
+    def read_requestline(self):
+        data = self.rfile.read(7)
+        if data[:1] == '<':
+            try:
+                data += self.rfile.read(15)
+                if data.lower().startswith('<policy-file-request/>'):
+                    self.socket.sendall(self.server.flash_policy)
+                else:
+                    self.log_error('Invalid request: %r', data)
+            finally:
+                self.socket.shutdown(SHUT_WR)
+                self.socket.close()
+                self.socket = None
+        else:
+            return data + self.rfile.readline()
 
     def handle_one_response(self):
         self.pre_start()

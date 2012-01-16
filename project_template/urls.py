@@ -12,7 +12,7 @@ def get_map():
     # Add routes here
     urlmap(map, [
 
-                ('/', 'controllers.index'),
+                ('/', 'controllers#index'),
                 #('/route/url', 'controllerName.actionName')     
             ])
 

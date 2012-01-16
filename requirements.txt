@@ -1,1 +1,4 @@
 gevent
+mako
+webob
+routes

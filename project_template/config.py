@@ -18,7 +18,7 @@ APP_DIR = os.getcwd()
 URL_RESOLVER = 'urls'
 
 # Specify controllers modules
-CONTROLLERS = ['controllers', 'static']
+CONTROLLERS = ['controllers', 'noodles.utils.static']
 
 # Specify Redis-server host there
 REDIS_HOST = 'localhost'

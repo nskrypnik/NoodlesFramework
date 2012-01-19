@@ -4,6 +4,7 @@ filedesc: Controller for serving static content
 import os,logging
 from noodles.http import BaseResponse, Error404
 from email.Utils import formatdate
+from controllers import auth_check
 
 # Mime types dictionary, contain pairs: key - file extansion,
 # value - mime type
@@ -40,7 +41,11 @@ def toInt(val):
     return int(val)
 
 
-def index(request, path_info, path):
+def index(request, path_info, path, auth=False):
+    if auth:
+        state = auth_check(request)
+        if type(state) != bool:
+            return state
     partial_response = False
     path_info = path_info.replace('%28', '(').replace('%29', ')').replace('%20', ' ')
     response = BaseResponse()
@@ -86,5 +91,5 @@ def index(request, path_info, path):
     response.headerlist.append(('Cache-control','max-age=626560472'))
 
     # This seems to be clear, return this response object
-
+    
     return response

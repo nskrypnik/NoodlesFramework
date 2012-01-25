@@ -10,6 +10,11 @@ import json
 import os
 import hashlib
 
+def mkey(*params):
+    """return a key composed of the arguments passed, delimeted by colon. for usage with redis"""
+    rt = ":".join([str(rt) for rt in params])
+    return rt
+
 non_record = re.compile(r'__\w+__')
 from config import *
 try:
@@ -116,16 +121,16 @@ class Model(object):
             logging.warning('You should save embedded objects with high level object')
             return
         if not self.id:
-            new_id = RedisConn.incr(':'.join([REDIS_NAMESPACE, self.__class__.__name__.lower() + '_key']))
+            new_id = RedisConn.incr(mkey(REDIS_NAMESPACE,self.__class__.__name__.lower()+'_key'))
             if self.__salt__:
                 self.id = hashlib.md5(str(new_id)+self.__salt__).hexdigest()
             else:
                 self.id = new_id
-#        print ':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), json.dumps(self.__instdict__)
-        RedisConn.set(':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), json.dumps(self.__instdict__))
+#        print mkey(REDIS_NAMESPACE, self.collection_name, self.id), json.dumps(self.__instdict__)
+        RedisConn.set(mkey(REDIS_NAMESPACE, self.collection_name, self.id), json.dumps(self.__instdict__))
         if self.expire != None:
-            RedisConn.expire(':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)]), self.expire)
-        #self.save_redis_recursive(':'.join([self.collection_name, str(self.id)]), self.__instdict__)        
+            RedisConn.expire(mkey(REDIS_NAMESPACE, self.collection_name, self.id), self.expire)
+        #self.save_redis_recursive(mkey(self.collection_name, self.id), self.__instdict__)        
 
 
     @classmethod
@@ -158,7 +163,7 @@ class Model(object):
             idtoget = id
         # First try to find object by Id
         # example: gameserver:scratchgames:101
-        inst_data = RedisConn.get(':'.join([REDIS_NAMESPACE, cls.get_collection_name(), str(idtoget)]))
+        inst_data = RedisConn.get(mkey(REDIS_NAMESPACE, cls.get_collection_name(), idtoget))
         if not inst_data: # No objects with such ID
             raise DoesNotExist('No model in Redis srorage with such id')
         else:
@@ -169,14 +174,14 @@ class Model(object):
     @classmethod
     def delete(cls, id, storage=None): # storage=None for backword capability
         "Delete key specified by ``id``"
-        result = RedisConn.delete(':'.join([REDIS_NAMESPACE, cls.get_collection_name(), str(id)]))
+        result = RedisConn.delete(mkey(REDIS_NAMESPACE, cls.get_collection_name(), id))
         return result
     
     #return flag to update client cookie
     def update(self, storage=None,**kwargs): # storage=None for backword capability
         '''update time expire'''
         print 'updating::'
-        id = ':'.join([REDIS_NAMESPACE, self.collection_name, str(self.id)])
+        id = mkey(REDIS_NAMESPACE, self.collection_name, self.id)
         
         if 'expire' in kwargs:
             print TIME_TO_OVERWRITE_CLIENT_COOKIE,RedisConn.ttl(id)

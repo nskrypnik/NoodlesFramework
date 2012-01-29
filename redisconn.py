@@ -4,6 +4,7 @@ Redis connection wrapper which gives a soft error in case that
 noodles is run on a machine without redis
 """
 from gevent.coros import RLock
+from local_config import RDB
 import logging
 
 
@@ -22,7 +23,7 @@ except ImportError:
 
 if redis:
     # Use here true Redis connection
-    RedisConn = redis.Redis(REDIS_HOST)
+    RedisConn = redis.Redis(REDIS_HOST, db='db%s' % RDB)
 
 else:
     # Get warning and use dictionary wrapper

@@ -54,7 +54,7 @@ class WebSocketHandler(WSGIHandler):
                 elif environ.get("HTTP_ORIGIN"):
                     result = self._handle_hixie()
             except:
-                self.close_connection = True
+                self.close()
                 raise
             self.result = []
             if not result:
@@ -191,16 +191,21 @@ class WebSocketHandler(WSGIHandler):
         msg = ''.join(towrite)
         self.socket.sendall(msg)
         self.headers_sent = True
+    def close(self):
+        self.is_closed = True
 
-    def respond(self, status, headers=[]):
-        self.close_connection = True
-        self._send_reply(status, headers)
-        if self.socket is not None:
+        if hasattr(self,'websocket'):
+            self.websocket.close()
+        if hasattr(self,'socket') and self.socket is not None:
             try:
                 self.socket._sock.close()
                 self.socket.close()
             except socket_error:
                 pass
+        
+    def respond(self, status, headers=[]):
+        self._send_reply(status, headers)
+        self.close()
 
     def _get_key_value(self, key_value):
         key_number = int(re.sub("\\D", "", key_value))

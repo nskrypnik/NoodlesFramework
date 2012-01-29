@@ -85,7 +85,7 @@ class MultiSocketHandler(WebSocketHandler):
         ws = env.get('wsgi.websocket')
         if not ws: raise WebSocketError('No server socket instance!')
         self.websocket = ws
-        self.onopen()
+        self.run_callback('open')
         # Endless event loop
         while 1:
             try:
@@ -102,17 +102,30 @@ class MultiSocketHandler(WebSocketHandler):
                 if jd['chid'] and jd['pkg']=='open':
                     logging.info('IGNORING DYNAMIC OPEN COMMAND %s'%data)
                     continue
-                try:
-                    self.onmessage(WebSocketMessage(data))
-                except Exception as e:
-                    self.onerror(json.dumps(str(e), separators=(',',':')))
+                self.run_callback('message',WebSocketMessage(data))
+
+
             else:
                 logging.debug('Web Socket is disconnected')
                 self.close_event.set()
             if self.close_event.is_set():
                 break
-        self.onclose()
+        self.run_callback('close')
 
+    def run_callback(self,obj,args=None):
+        
+        try:
+            assert hasattr(self,'on%s'%obj)
+            f =  getattr(self,'on%s'%obj)
+            if args:
+                return f(args)
+            else:
+                return f()
+        except Exception as e:
+            rt = self.onerror(json.dumps(str(e), separators=(',',':')))
+            self.close()
+            return rt
+        
 
     def onopen(self):
         pass

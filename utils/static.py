@@ -4,7 +4,11 @@ filedesc: Controller for serving static content
 import os,logging
 from noodles.http import BaseResponse, Error404
 from email.Utils import formatdate
-from controllers import auth_check
+try:
+    from controllers import auth_check
+except ImportError:
+    auth_check=None
+
 
 # Mime types dictionary, contain pairs: key - file extansion,
 # value - mime type
@@ -42,7 +46,7 @@ def toInt(val):
 
 
 def index(request, path_info, path, auth=False):
-    if auth:
+    if auth and auth_check:
         state = auth_check(request)
         if type(state) != bool:
             return state

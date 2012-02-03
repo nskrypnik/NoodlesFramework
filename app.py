@@ -102,7 +102,7 @@ class Observer(threading.Thread):
 
     def scanfiles(self,dr,files,checkchange=False,initial=False):
         goodfiles=['.py']
-        baddirs = ['site-packages','.git','python(2|3)\.(\d+)']
+        baddirs = ['site-packages','.git','python(2|3)\.(\d+)','tmp']
         gfmatch = re.compile('('+'|'.join(goodfiles)+')$')
         bdmatch = re.compile('(\/)('+'|'.join(baddirs)+')($|\/)')
         walk = os.walk(dr)

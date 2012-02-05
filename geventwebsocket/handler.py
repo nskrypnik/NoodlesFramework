@@ -218,7 +218,7 @@ class WebSocketHandler(WSGIHandler):
 
 
 def reconstruct_url(environ):
-    secure = environ['wsgi.url_scheme'] == 'https'
+    secure = environ['HTTP_ORIGIN'].lower().startswith('https')
     if secure:
         url = 'wss://'
     else:

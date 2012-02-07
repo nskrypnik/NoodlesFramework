@@ -23,7 +23,7 @@ except ImportError:
 
 if redis:
     # Use here true Redis connection
-    RedisConn = redis.Redis(REDIS_HOST, db='db%s' % RDB)
+    RedisConn = redis.Redis(host=REDIS_HOST, db=RDB)
 
 else:
     # Get warning and use dictionary wrapper

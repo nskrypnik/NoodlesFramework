@@ -5,10 +5,13 @@ filedesc: a kind of redis orm
 
 from noodles.redisconn import RedisConn
 
-import re, logging, copy
+import re
+import logging
+import copy
 import json
 import os
 import hashlib
+
 
 def mkey(*params):
     """return a key composed of the arguments passed, delimeted by colon. for usage with redis"""
@@ -24,8 +27,10 @@ except ImportError:
     current_dir = os.path.split(current_path)[-1]
     REDIS_NAMESPACE = current_dir.lower().replace(' ', '_')
 
+
 class DoesNotExist(Exception):
     pass
+
 
 class Value(object):
     "Single value in our data storage"
@@ -33,16 +38,20 @@ class Value(object):
     __isvalue__ = True
 
     def __init__(self, type_of_value=None):
-        if type_of_value: self.type = type_of_value
-        else: self.type = str
+        if type_of_value:
+            self.type = type_of_value
+        else:
+            self.type = str
 
     def set_key(self, key):
         self.key = key
 
     def typing(self, value):
         " If value is None it returns None, else value value in proper type"
-        if value != None: return self.type(value)
-        else: return None
+        if value != None:
+            return self.type(value)
+        else:
+            return None
 
     def get_default(self):
         return None
@@ -51,14 +60,15 @@ class Value(object):
         valuedict = instance.__instdict__
         if valuedict:
             return self.typing(valuedict[self.key])
-        else: return self
+        else:
+            return self
 
     def __set__(self, instance, value):
         valuedict = instance.__instdict__
         try:
             valuedict[self.key] = self.type(value)
         except:
-            logging.info( 'could not save key %s with value %s as type %s'%(self.key,value,self.type))
+            logging.info('could not save key %s with value %s as type %s' % (self.key, value, self.type))
             raise
 
 
@@ -66,19 +76,22 @@ class DateValue(Value):
     "Represents datatime python object"
     pass
 
+
 class Model(object):
     " General class for objects description in data storage "
     # static model parameters
     __structure__ = {}
-    __collection__ = {} # Collection name for Mongo DB
+    __collection__ = {}  # Collection name for Mongo DB
     id = Value(str)
     __salt__ = None
+
     def __init__(self, valuedict=None, embedded=False, expire=None, **kwargs):
-        
+
         #we might use salt to make our sequence key for this object more interesting
-        if 'salt' in kwargs: self.__salt__ = kwargs['salt']
+        if 'salt' in kwargs:
+            self.__salt__ = kwargs['salt']
         self.expire = expire
-        classname = self.__class__.__name__        
+        classname = self.__class__.__name__
         self.__init_structure__(classname, valuedict, **kwargs)
         self.collection_name = self.__collection__[classname]
         self.embedded = embedded
@@ -106,7 +119,8 @@ class Model(object):
             self.__instdict__ = copy.deepcopy(self.__structure__[classname])
 
         for k in kwargs:
-            if k=='salt': continue
+            if k == 'salt':
+                continue
             elif k in self.__instdict__:
                 if hasattr(kwargs[k], 'get_values'):
                     self.__instdict__[k] = kwargs[k].get_values()
@@ -121,17 +135,16 @@ class Model(object):
             logging.warning('You should save embedded objects with high level object')
             return
         if not self.id:
-            new_id = RedisConn.incr(mkey(REDIS_NAMESPACE,self.__class__.__name__.lower()+'_key'))
+            new_id = RedisConn.incr(mkey(REDIS_NAMESPACE, self.__class__.__name__.lower() + '_key'))
             if self.__salt__:
-                self.id = hashlib.md5(str(new_id)+self.__salt__).hexdigest()
+                self.id = hashlib.md5(str(new_id) + self.__salt__).hexdigest()
             else:
                 self.id = new_id
 #        print mkey(REDIS_NAMESPACE, self.collection_name, self.id), json.dumps(self.__instdict__)
         RedisConn.set(mkey(REDIS_NAMESPACE, self.collection_name, self.id), json.dumps(self.__instdict__))
         if self.expire != None:
             RedisConn.expire(mkey(REDIS_NAMESPACE, self.collection_name, self.id), self.expire)
-        #self.save_redis_recursive(mkey(self.collection_name, self.id), self.__instdict__)        
-
+        #self.save_redis_recursive(mkey(self.collection_name, self.id), self.__instdict__)
 
     @classmethod
     def get_structure(cls):
@@ -155,16 +168,16 @@ class Model(object):
         return copy.deepcopy(self.__instdict__)
 
     @classmethod
-    def get(cls, id, storage = None,salt=None): # storage=None for backword capability 
+    def get(cls, id, storage=None, salt=None):  # storage=None for backword capability
         "Get object from Redis storage by ID"
         if salt:
-            idtoget = hashlib.md5(id+salt).hexdigest()
+            idtoget = hashlib.md5(id + salt).hexdigest()
         else:
             idtoget = id
         # First try to find object by Id
         # example: gameserver:scratchgames:101
         inst_data = RedisConn.get(mkey(REDIS_NAMESPACE, cls.get_collection_name(), idtoget))
-        if not inst_data: # No objects with such ID
+        if not inst_data:  # No objects with such ID
             raise DoesNotExist('No model in Redis srorage with such id')
         else:
             # Copy structure of Class to new dictionary
@@ -172,29 +185,30 @@ class Model(object):
             return cls(valuedict=instance_dict)
 
     @classmethod
-    def delete(cls, id, storage=None): # storage=None for backword capability
+    def delete(cls, id, storage=None):  # storage=None for backword capability
         "Delete key specified by ``id``"
         result = RedisConn.delete(mkey(REDIS_NAMESPACE, cls.get_collection_name(), id))
         return result
-    
+
     #return flag to update client cookie
-    def update(self, storage=None,**kwargs): # storage=None for backword capability
+    def update(self, storage=None, **kwargs):  # storage=None for backword capability
         '''update time expire'''
         print 'updating::'
         id = mkey(REDIS_NAMESPACE, self.collection_name, self.id)
-        
+
         if 'expire' in kwargs:
-            print TIME_TO_OVERWRITE_CLIENT_COOKIE,RedisConn.ttl(id)
-            if  TIME_TO_OVERWRITE_CLIENT_COOKIE>RedisConn.ttl(id):
+            print TIME_TO_OVERWRITE_CLIENT_COOKIE, RedisConn.ttl(id)
+            if  TIME_TO_OVERWRITE_CLIENT_COOKIE > RedisConn.ttl(id):
                 result = RedisConn.expire(id, kwargs['expire'])
-                logging.info('UPDATE LIFETIME TO: %s SECONDS'%kwargs['expire'])
+                logging.info('UPDATE LIFETIME TO: %s SECONDS' % kwargs['expire'])
                 return result
             else:
                 logging.debug('non_update_SESSION')
 
         else:
             raise Exception('unknown action!!!')
- 
+
+
 class Node(Value):
     " Use it for embedd objects to model "
 
@@ -207,7 +221,8 @@ class Node(Value):
             # TODO: Optimiize this!
             model_inst = self.model(valuedict=valuedict[self.key])
             return model_inst
-        else: return self
+        else:
+            return self
 
     def __set__(self, instance, value):
         pass
@@ -215,4 +230,3 @@ class Node(Value):
     def get_default(self):
         model_inst = self.model()
         return model_inst.get_structure()
-

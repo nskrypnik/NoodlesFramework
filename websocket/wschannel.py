@@ -2,6 +2,8 @@
 '''
 filedesc: an older, deprecated websocket multichannel implementation
 '''
+
+
 class BaseChannelHandler(object):
     """
         Base class for channel handlers. Abstract, use just for creation of other handler classes.
@@ -20,7 +22,8 @@ class BaseChannelHandler(object):
         raise NotImplemented
 
     def response(self, data_to_send, chid=None):
-        if not chid: chid = self.chid
+        if not chid:
+            chid = self.chid
         self.session.tosend(chid, data_to_send)
 
     def __getattr__(self, name):
@@ -30,7 +33,8 @@ class BaseChannelHandler(object):
         op = data.get('op')
         if op:
             func = getattr(self, op)
-            if func: func(data)
+            if func:
+                func(data)
             else:
                 raise Exception('Unknown operation on channel')
         else:

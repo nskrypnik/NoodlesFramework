@@ -1,5 +1,5 @@
 """
-Base handler class is defined from which a web socket channel 
+Base handler class is defined from which a web socket channel
 implementation is derived
 """
 from config import WS_CHANNELS, DEBUG
@@ -23,11 +23,14 @@ except ImportError:
 class WebSocketSendError(Exception):
     pass
 
+
 class WebSocketError(Exception):
     pass
 
+
 class MultiChannelWSError(Exception):
     pass
+
 
 class WebSocketMessage(object):
     def __init__(self, data):
@@ -83,7 +86,8 @@ class MultiSocketHandler(WebSocketHandler):
 
     def __call__(self, env, start_response):
         ws = env.get('wsgi.websocket')
-        if not ws: raise WebSocketError('No server socket instance!')
+        if not ws:
+            raise WebSocketError('No server socket instance!')
         self.websocket = ws
         self.run_callback('open')
         # Endless event loop
@@ -99,11 +103,10 @@ class MultiSocketHandler(WebSocketHandler):
             # be ignored for now.
             if data:
                 jd = json.loads(data)
-                if jd['chid'] and jd['pkg']=='open':
-                    logging.info('IGNORING DYNAMIC OPEN COMMAND %s'%data)
+                if jd['chid'] and jd['pkg'] == 'open':
+                    logging.info('IGNORING DYNAMIC OPEN COMMAND %s' % data)
                     continue
-                self.run_callback('message',WebSocketMessage(data))
-
+                self.run_callback('message', WebSocketMessage(data))
 
             else:
                 logging.debug('Web Socket is disconnected')
@@ -112,20 +115,19 @@ class MultiSocketHandler(WebSocketHandler):
                 break
         self.run_callback('close')
 
-    def run_callback(self,obj,args=None):
-        
+    def run_callback(self, obj, args=None):
+
         try:
-            assert hasattr(self,'on%s'%obj)
-            f =  getattr(self,'on%s'%obj)
+            assert hasattr(self, 'on%s' % obj)
+            f = getattr(self, 'on%s' % obj)
             if args:
                 return f(args)
             else:
                 return f()
         except Exception as e:
-            rt = self.onerror(json.dumps(str(e), separators=(',',':')))
+            rt = self.onerror(json.dumps(str(e), separators=(', ', ':')))
             self.close()
             return rt
-        
 
     def onopen(self):
         pass
@@ -136,7 +138,6 @@ class MultiSocketHandler(WebSocketHandler):
     def onmessage(self, msg):
         pass
 
-
     def onerror(self, e):
         """
         Send here Exception and traceback by Error channel
@@ -145,13 +146,13 @@ class MultiSocketHandler(WebSocketHandler):
         traceback = f.formatException(sys.exc_info())
         if DEBUG:
             err_message = {'chid': WS_CHANNELS['ERROR_CHID'],
-                       'pkg': {'exception': e.__repr__(),'tb': traceback}}
+                       'pkg': {'exception': e.__repr__(), 'tb': traceback}}
         else:
             err_message = {'chid': WS_CHANNELS['ERROR_CHID'],
                        'pkg': {'exception': 'error 500',
                                'tb': 'an error occured'}}
-            MailMan.mail_send(MailMan(),e.__repr__(), traceback)
-        self.websocket.send(json.dumps(err_message, separators=(',',':')))
+            MailMan.mail_send(MailMan(), e.__repr__(), traceback)
+        self.websocket.send(json.dumps(err_message, separators=(', ', ':')))
         print traceback
 
     def dispatcher_routine(self):
@@ -170,7 +171,7 @@ class MultiChannelWS(MultiSocketHandler):
     Use this class to implement virtual channels over web socket.
     To use it, inherit class from this and override init_channel function,
     where you can register all channel handlers by register_channel function
-    
+
     Example:
     class MyWebSocket(MultiChannelWS):
         def init_channels(self):
@@ -231,4 +232,3 @@ class MultiChannelWS(MultiSocketHandler):
         if not channel_handler:
             raise MultiChannelWSError('No such channel')
         channel_handler.onmessage(WebSocketMessage(msg.data['pkg']))
-

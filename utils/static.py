@@ -1,13 +1,14 @@
 '''
 filedesc: Controller for serving static content
 '''
-import os,logging
+import os
+import logging
 from noodles.http import BaseResponse, Error404
 from email.Utils import formatdate
 try:
     from controllers import auth_check
 except ImportError:
-    auth_check=None
+    auth_check = None
 
 
 # Mime types dictionary, contain pairs: key - file extansion,
@@ -17,7 +18,7 @@ MIME_TYPES = {
     '.swf': 'application/x-shockwave-flash',
 
     # Text types
-    '.gz':'application/x-tar',
+    '.gz': 'application/x-tar',
     '.js': 'text/javascript',
     '.css': 'text/css',
     '.html': 'text/html',
@@ -40,8 +41,10 @@ MIME_TYPES = {
     # Thank you Jimmy
     }
 
+
 def toInt(val):
-    if val == '': return 0
+    if val == '':
+        return 0
     return int(val)
 
 
@@ -54,17 +57,18 @@ def index(request, path_info, path, auth=False):
     path_info = path_info.replace('%28', '(').replace('%29', ')').replace('%20', ' ')
     response = BaseResponse()
     # define a file extansion
-    base, ext = os.path.splitext(path_info) # Get the file extansion
+    base, ext = os.path.splitext(path_info)  # Get the file extansion
     mime_type = MIME_TYPES.get(ext, 'text/plain')
-    if not mime_type: raise Exception("unknown doc, or something like that :-P: %s" % ext)
+    if not mime_type:
+        raise Exception("unknown doc, or something like that :-P: %s" % ext)
     static_file_path = os.path.join(path, path_info)
     # Check if this path exists
     if not os.path.exists(static_file_path):
         error_msg = "<h1>Error 404</h1> No such file STATIC_ROOT/%s" % path_info
-        logging.debug( 'not found: %s'%static_file_path)
+        logging.debug('not found: %s' % static_file_path)
         return Error404(error_msg)
     # configure response
-    static_file = open(static_file_path, 'rb') # Open file
+    static_file = open(static_file_path, 'rb')  # Open file
     # Here we try to handle Range parameter
 
     content_offset = 0
@@ -73,27 +77,27 @@ def index(request, path_info, path, auth=False):
     if request_range:
         range_bytes = request_range.replace('bytes=', '')
         range_bytes = range_bytes.split('-')
-        if len(range_bytes) > 2: raise Exception('Wrong http Range parameter "%s"' % request_range)
+        if len(range_bytes) > 2:
+            raise Exception('Wrong http Range parameter "%s"' % request_range)
         content_offset = toInt(range_bytes[0])
         content_end = toInt(range_bytes[1])
         partial_response = True
 
-
     static_content = static_file.read()
-    if content_end <= 0 or content_end >= len(static_content): content_end = len(static_content) - 1
+    if content_end <= 0 or content_end >= len(static_content):
+        content_end = len(static_content) - 1
     response.body = static_content[content_offset: content_end + 1]
 
-
     response.charset = 'utf-8'
-    response.headerlist=[]
+    response.headerlist = []
     response.headerlist.append(('Content-type', mime_type))
     if partial_response:
         response.status = 206
         response.headerlist.append(('Content-Range', 'bytes %i-%i/%i' % (content_offset, content_end, len(static_content))))
     st = os.stat(static_file_path)
-    response.headerlist.append(('Last-modified',formatdate(st.st_mtime)))
-    response.headerlist.append(('Cache-control','max-age=626560472'))
+    response.headerlist.append(('Last-modified', formatdate(st.st_mtime)))
+    response.headerlist.append(('Cache-control', 'max-age=626560472'))
 
     # This seems to be clear, return this response object
-    
+
     return response

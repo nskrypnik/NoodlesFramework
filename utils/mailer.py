@@ -1,5 +1,5 @@
 """
-Send email 
+Send email
 """
 from config import NOODLES_ERROR_RECIPIENT, MAIL_SERVER, MAIL_PORT, MAIL_LOGIN, MAIL_PASSWORD, NOODLES_ERROR_SENDER
 from email.mime.text import MIMEText

@@ -18,21 +18,24 @@ except:
 SET_COOKIES = '__set_cookies'
 UNSET_COOKIES = '__unset_cookies'
 
+
 class Request(webob.Request):
     " Request object wrapper fo adding session handling and other features "
     def __init__(self, env):
         super(Request, self).__init__(env)
 
+
 class BaseResponse(webob.Response):
     " Just wrapper, may be implemnt cookies there, may be somthing else )) "
-    is_noodles_response = True # for check if it really noodles response
+    is_noodles_response = True  # for check if it really noodles response
+
 
 class Response(BaseResponse):
     " Simple response class with 200 http header status "
     def __init__(self, body=''):
         super(Response, self).__init__()
         # Set standard response attributes
-        self.status = 200 # 200 OK, it's default, but anyway...
+        self.status = 200  # 200 OK, it's default, but anyway...
         self.headerlist = [('Content-type', 'text/html')]
         self.charset = 'utf-8'
         self.body = body.encode(ENCODING)
@@ -51,6 +54,7 @@ class Redirect(BaseResponse):
                 self.set_cookie(str(cookie), str(cookie_dict.get(cookie)))
         self.location = redirect_url
 
+
 class Error404(BaseResponse):
     " Simple Http 404 error implementation "
     def __init__(self, error_body=''):
@@ -59,6 +63,7 @@ class Error404(BaseResponse):
         self.headerlist = [('Content-type', 'text/html')]
         self.charset = 'utf-8'
         self.text = unicode(error_body)
+
 
 class Error500(BaseResponse):
     """
@@ -79,10 +84,10 @@ class Error500(BaseResponse):
             ex = "Sorry, an error occured"
         error_500_template = """
                             <h1>500 error</h1>
-                            <div style="font-size:125%"> 
-                                ${ex} 
+                            <div style="font-size:125%">
+                                ${ex}
                             </div>
-                            
+
                             <div style="margin-top: 20px">
                                 ${tb}
                             </div>
@@ -96,7 +101,7 @@ class XResponse(BaseResponse):
     def __init__(self, response_dict):
         # Set standard response attributes
         super(XResponse, self).__init__()
-        self.status = 200 # 200 OK, it's default, but anyway...
+        self.status = 200  # 200 OK, it's default, but anyway...
         self.headerlist = [('Content-type', 'application/x-javascript')]
         self.charset = 'utf-8'
 

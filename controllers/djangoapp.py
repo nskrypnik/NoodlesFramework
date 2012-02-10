@@ -16,11 +16,14 @@ except:
 
 os.environ['DJANGO_SETTINGS_MODULE'] = DJANGO_SETTINGS
 
+
 def run_django(request, **kwargs):
     return WSGIHandler()
 
+
 class DjangoImportError(Exception):
     pass
+
 
 class DjangoSettingsError(Exception):
     pass

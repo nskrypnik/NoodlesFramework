@@ -16,8 +16,10 @@ import logging
 NOODLES_EVENTS_CHANNEL = '__noodles_events_channel'
 NOODLES_EVENTS_LIST = {}
 
+
 class NoodlesEventError(Exception):
     pass
+
 
 class Event(object):
     "I'm event object"
@@ -46,6 +48,7 @@ class Event(object):
     def unregister(self):
         NOODLES_EVENTS_LIST.pop(self.id)
 
+
 def event_listener():
     print "event_listener:: i'm event listener"
     rc = redis.Redis()
@@ -61,7 +64,8 @@ def event_listener():
             if event:
                 if not event_data:
                     event.callback()
-                else: event.callback(event_data)
+                else:
+                    event.callback(event_data)
             else:
                 logging.warning('Noodles events engine: Event#%i is unregistered' % event_id)
 

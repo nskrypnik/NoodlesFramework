@@ -191,18 +191,19 @@ class WebSocketHandler(WSGIHandler):
         msg = ''.join(towrite)
         self.socket.sendall(msg)
         self.headers_sent = True
+
     def close(self):
         self.is_closed = True
 
-        if hasattr(self,'websocket'):
+        if hasattr(self, 'websocket'):
             self.websocket.close()
-        if hasattr(self,'socket') and self.socket is not None:
+        if hasattr(self, 'socket') and self.socket is not None:
             try:
                 self.socket._sock.close()
                 self.socket.close()
             except socket_error:
                 pass
-        
+
     def respond(self, status, headers=[]):
         self._send_reply(status, headers)
         self.close()

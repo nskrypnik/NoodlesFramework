@@ -6,11 +6,11 @@ import os
 
 DEBUG = True
 TESTING = True
-AUTO_RELOAD=True
+AUTO_RELOAD = True
 
 # Specify the server port
 PORT = 8090
-ENCODING = 'utf-8' # default application encoding
+ENCODING = 'utf-8'  # default application encoding
 
 APP_DIR = os.getcwd()
 
@@ -38,13 +38,13 @@ MAKO_TMP_DIR = os.path.join(APP_DIR, 'tmp/modules')
 
 MIDDLEWARES = [
                # Specify list of middlewares used in your application here
-               #'session.SessionMiddleware', 
+               #'session.SessionMiddleware',
                ]
 
 SERVER_LOGTYPE = 'default'
 ####Mail parameters
 NOODLES_ERROR_RECIPIENT = [
-                           #List with default error mail recipient 
+                           #List with default error mail recipient
                            ]
 NOODLES_ERROR_SENDER = 'noodles_error@mail.domain.com'
 MAIL_SERVER = 'smtp.example.com'

@@ -12,6 +12,7 @@ import gevent
 import logging
 import json
 
+
 class WSSession(object):
     """
         Represent all information about web socket session, and provide
@@ -28,12 +29,12 @@ class WSSession(object):
         # Get id for web-socket session
         self.id = RedisConn.incr("".join([self.__class__.__name__, '_ids']))
         self.output_queue = Queue()
-        self.params = {'wssid': self.id} # Session specific parameters
-        self.greenlets = {} # The dictionary that storages all greenlets associated with this session
+        self.params = {'wssid': self.id}  # Session specific parameters
+        self.greenlets = {}  # The dictionary that storages all greenlets associated with this session
         # except of input/output servelet handlers and main servelet function
-        self.terminators = {} # list of functions for execute while session is terminating
+        self.terminators = {}  # list of functions for execute while session is terminating
         self._collection[self.id] = self
-        self.semaphore = Semaphore() # use it concurent data access conditions
+        self.semaphore = Semaphore()  # use it concurent data access conditions
 
     def add_terminator(self, func):
         "Add terminator function to session terminators scope"
@@ -59,7 +60,7 @@ class WSSession(object):
         """ Add some greenlet with function func to session,
             terminator is function that executes after killing of greenlet
         """
-        pass # while pass
+        pass  # while pass
 
     def kill_greenlets(self):
         " Kill all greenlets associated with this session "
@@ -72,7 +73,6 @@ class WSSession(object):
         for t in self.terminators.values():
             t(self)
         self._collection.pop(self.id)
-
 
     def __getattr__(self, name):
         " If we try to access to some property isn't existed, returns None"

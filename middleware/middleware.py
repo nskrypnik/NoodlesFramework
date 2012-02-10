@@ -4,13 +4,16 @@ filedesc: framework middleware base class
 '''
 import sys
 
+
 class MiddlewareLoadError(Exception):
     pass
+
 
 class BaseMiddleware(object):
     def __init__(self, callable_obj):
         self.callable = callable_obj
         self.request = callable_obj.request
+
 
 class AppMiddlewares(list):
     "Class represents application middlewares"
@@ -25,7 +28,8 @@ class AppMiddlewares(list):
             middleware_module = '.'.join(middleware_module)
             base_mod = __import__(middleware_module, globals(), locals())
             mod = sys.modules.get(middleware_module)
-            if not mod: mod = base_mod
+            if not mod:
+                mod = base_mod
             try:
                 self.append(getattr(mod, middleware_class_name))
             except AttributeError:

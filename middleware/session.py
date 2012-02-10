@@ -12,14 +12,17 @@ except:
 import json
 import logging
 
+
 class SessionData(Model):
-    data = Value(str);
+    data = Value(str)
+
 
 class Session():
 
     class _Data(object):
         def init(self, _dict_=None):
-            if _dict_: self.__dict__.update(_dict_)
+            if _dict_:
+                self.__dict__.update(_dict_)
 
         def update(self, _dict_):
             self.__dict__.update(_dict_)
@@ -58,6 +61,7 @@ class Session():
         self._sessdata.data = json.dumps(self.data.__dict__)
         self._sessdata.save()
 
+
 class SessionMiddleware(BaseMiddleware):
     "Middleware that handles HTTP sessions"
 
@@ -75,6 +79,3 @@ class SessionMiddleware(BaseMiddleware):
                 response.set_cookie(SESSION_COOKIE, str(self.request.session.id))
             self.request.session.save()
             return response
-
-
-

@@ -248,7 +248,7 @@ class WebSocketHybi(object):
                 masked_payload = bytearray(payload)
 
                 for i in range(len(masked_payload)):
-                    masked_payload[i] = masked_payload[i] ^ masking_key[i%4]
+                    masked_payload[i] = masked_payload[i] ^ masking_key[i % 4]
 
                 payload = masked_payload
 
@@ -327,9 +327,9 @@ class WebSocketHybi(object):
         ## +-+-+-+-+-------+
         header = chr(
             (fin << 7) |
-            (0 << 6) | # RSV1
-            (0 << 5) | # RSV2
-            (0 << 4) | # RSV3
+            (0 << 6) |  # RSV1
+            (0 << 5) |  # RSV2
+            (0 << 4) |  # RSV3
             opcode
         )
 

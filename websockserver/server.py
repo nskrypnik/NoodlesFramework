@@ -36,7 +36,7 @@ class WebSocketServer(WSGIServer):
                                                    policy=self.flash_policy)
         else:
             self.policy_server = None
-        super(WebSocketServer, self).__init__(listener, application, 
+        super(WebSocketServer, self).__init__(listener, application,
            backlog=backlog, spawn=spawn, log=log, handler_class=handler_class,
            environ=environ, **ssl_args)
 

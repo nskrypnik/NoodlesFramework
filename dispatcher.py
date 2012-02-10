@@ -3,15 +3,19 @@ filedesc: request dispatch logic
 '''
 from noodles.http import Error404
 from noodles.templates import Templater
-import sys, os, urllib, logging
+import sys
+import os
+import urllib
+import logging
 
 # Add standard controllers dir to PYTHON_PATH directory
 sys.path.append(os.path.join(os.path.dirname(__file__), 'controllers'))
 
+
 class CallWrapper(object):
     def __init__(self, controller, action, extra_args):
         self.extra_args = extra_args
-        self.request = self.extra_args['request'] # for middleware compatibility
+        self.request = self.extra_args['request']  # for middleware compatibility
         try:
             self.action = getattr(controller, action)
         except AttributeError:
@@ -20,12 +24,15 @@ class CallWrapper(object):
     def __call__(self):
         return self.action(**self.extra_args)
 
+
 class Dispatcher(object):
     def __init__(self, **kwarg):
         # Get the mapper object
         mapper = kwarg.get('mapper')
-        if mapper: self.mapper = mapper
-        else: raise Exception('No mapper object')
+        if mapper:
+            self.mapper = mapper
+        else:
+            raise Exception('No mapper object')
         controllers = kwarg.get('controllers')
         if not controllers:
             raise Exception('No controllers specified for application')
@@ -35,7 +42,8 @@ class Dispatcher(object):
             # Import all controllers
             base_mod = __import__(controller, globals(), locals(), [], -1)
             mod = sys.modules.get(controller)
-            if not mod: mod = base_mod
+            if not mod:
+                mod = base_mod
             self.controllers[controller] = mod
         #add some default controllers
         self.controllers[Templater._name] = Templater()
@@ -44,18 +52,21 @@ class Dispatcher(object):
         " Returns callable object "
         route_res = self.mapper.match(request.path)
         #print route_res, 'routes_res'
-        if not route_res: return self.not_found(request)
+        if not route_res:
+            return self.not_found(request)
         # Get controller name and action from routes
         controller_name = route_res.get('controller')
         action = route_res.get('action')
         controller = self.controllers.get(controller_name)
-        if not controller: raise Exception('No such controller \'%s\'' % controller_name)
+        if not controller:
+            raise Exception('No such controller \'%s\'' % controller_name)
         # Prepare extra args for callable
-        extra_args = route_res.copy() # copying all data from routes dictionary
+        extra_args = route_res.copy()  # copying all data from routes dictionary
         for k, v in extra_args.items():
             extra_args[k] = urllib.unquote(v).decode('utf8')
         # Delete controller and action items
-        del extra_args['controller']; del extra_args['action']
+        del extra_args['controller']
+        del extra_args['action']
         extra_args['request'] = request
         callable_obj = CallWrapper(controller, action, extra_args)
         return callable_obj

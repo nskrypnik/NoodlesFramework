@@ -2,11 +2,13 @@
 Base handler class is defined from which a web socket channel
 implementation is derived
 """
-from config import WS_CHANNELS, DEBUG
+from config import WS_CHANNELS, DEBUG, APICONTROLLERS, API_RESOLVER
 from gevent.event import Event
 from noodles.dispatcher import Dispatcher
 from noodles.geventwebsocket.handler import WebSocketHandler
+from noodles.utils import datahandler
 from noodles.utils.mailer import MailMan
+from noodles.utils.structure import Structure
 from wssession import WSSession
 import json
 import logging
@@ -18,6 +20,9 @@ try:
     from config import ENCODING
 except ImportError:
     ENCODING = 'utf-8'
+
+
+api_resolver = __import__(API_RESOLVER, globals(), locals())
 
 
 class WebSocketSendError(Exception):
@@ -83,6 +88,15 @@ class MultiSocketHandler(WebSocketHandler):
         self.close_event = Event()
         rc = redis.Redis()
         self.sub = rc.pubsub()
+        self.mapper = api_resolver.get_map()
+        self.controllers = {}
+        for controller in APICONTROLLERS:
+            # Import all controllers
+            base_mod = __import__(controller, globals(), locals(), [], -1)
+            mod = sys.modules.get(controller)
+            if not mod:
+                mod = base_mod
+            self.controllers[controller] = mod
 
     def __call__(self, env, start_response):
         ws = env.get('wsgi.websocket')
@@ -136,7 +150,20 @@ class MultiSocketHandler(WebSocketHandler):
         pass
 
     def onmessage(self, msg):
-        pass
+        if type(msg.data) != dict:
+            raise TypeError("""
+                            Request object type is %s not dict!
+                            """ % type(msg.data))
+        action = msg.data.get('Action', False)
+        if not action:
+            raise ValueError("Action not found in request")
+        route_res = self.mapper.match(action)
+        controller = self.controllers.get(route_res.get('controller', False))
+        if not controller:
+            raise ValueError("Controller not found")
+        handler = getattr(controller, route_res.get('action'))
+        response = handler(msg.data.get('params', None))
+        self.send(response)
 
     def onerror(self, e):
         """
@@ -195,7 +222,8 @@ class MultiChannelWS(MultiSocketHandler):
                                'pkg': data,
                                'session_params': self._wsh.session.params,
                                }
-            self._wsh.websocket.send(json.dumps(package_to_send))
+            data = json.dumps(package_to_send, default=datahandler)
+            self._wsh.websocket.send(data)
 
     def __init__(self, **kwargs):
         super(MultiChannelWS, self).__init__(**kwargs)

@@ -1,27 +1,24 @@
 """
 Machinery for launching the wsgi server
 """
-from gevent import monkey
-from gevent.wsgi import WSGIServer
-from noodles.utils.mailer import MailMan
-monkey.patch_all()
-
-# Gevent-socketio lib
-from noodles.websockserver import server
-from noodles.http import Request, Response, Error500
-from noodles.dispatcher import Dispatcher
-from noodles.middleware import AppMiddlewares
 from config import URL_RESOLVER, CONTROLLERS, MIDDLEWARES, DEBUG, AUTO_RELOAD
-
+from gevent import monkey, pywsgi
+from gevent.wsgi import WSGIServer
+from noodles.dispatcher import Dispatcher
+from noodles.geventwebsocket.handler import WebSocketHandler
+from noodles.http import Request, Response, Error500
+from noodles.middleware import AppMiddlewares
+from noodles.utils.mailer import MailMan
+from noodles.websockserver import server
 import logging
-import traceback
 import sys
 import os
-import threading
+import traceback
 import re
 import time
-from gevent import pywsgi
-from noodles.geventwebsocket.handler import WebSocketHandler
+import threading
+monkey.patch_all()
+
 
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
@@ -178,7 +175,6 @@ def startapp():
         s = StringIO.StringIO()
     else:
         s = SERVER_LOGTYPE
-
     server_instance = server.WebSocketServer(('', int(PORT)), noodlesapp, log=s)
     if AUTO_RELOAD:
         fs_monitor(server_instance)

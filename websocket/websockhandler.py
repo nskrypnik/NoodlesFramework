@@ -223,7 +223,10 @@ class MultiChannelWS(MultiSocketHandler):
                                'session_params': self._wsh.session.params,
                                }
             data = json.dumps(package_to_send, default=datahandler)
-            self._wsh.websocket.send(data)
+            try:
+                self._wsh.websocket.send(data)
+            except:
+                logging.warning('Can\'t send data to websocket!')
 
     def __init__(self, **kwargs):
         super(MultiChannelWS, self).__init__(**kwargs)

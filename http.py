@@ -9,6 +9,8 @@ from mako.template import Template
 import webob
 import json
 import logging
+import utils
+#from  utils.datahandler
 
 try:
     from config import ENCODING
@@ -121,7 +123,7 @@ class XResponse(BaseResponse):
             for cookie in unset_cookies_dict:
                 self.delete_cookie(cookie)
             response_dict.pop(UNSET_COOKIES)
-        self.body = json.dumps(response_dict)
+        self.body = json.dumps(response_dict, default=utils.datahandler)
 
 
 # Specify decorator for ajax response controller functions

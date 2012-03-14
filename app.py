@@ -165,7 +165,7 @@ def fs_monitor(server_instance):
 
 
 def startapp():
-    print 'Start server on %i...' % get_config('PORT')
+    print 'Start server on %s...' % get_config('PORT')
     if get_config('SERVER_LOGTYPE') == 'supress':
         import StringIO
         s = StringIO.StringIO()

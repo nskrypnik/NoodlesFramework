@@ -10,6 +10,7 @@ import time
 from config import URL_RESOLVER, CONTROLLERS, MIDDLEWARES, DEBUG, AUTO_RELOAD
 
 from gevent import monkey
+from lib.utils import get_config
 from noodles.dispatcher import Dispatcher
 from noodles.http import Request, Error500
 from noodles.middleware import AppMiddlewares
@@ -164,18 +165,14 @@ def fs_monitor(server_instance):
 
 
 def startapp():
-    try:
-        from config import PORT, SERVER_LOGTYPE
-    except ImportError:
-        PORT = 8088  # By defaultl 8088 debug port
-    print 'Start server on %i...' % int(PORT)
-    if SERVER_LOGTYPE == 'supress':
+    print 'Start server on %i...' % get_config('PORT')
+    if get_config('SERVER_LOGTYPE') == 'supress':
         import StringIO
         s = StringIO.StringIO()
     else:
-        s = SERVER_LOGTYPE
-    server_instance = server.WebSocketServer(('', int(PORT)), noodlesapp,
-                                             log=s)
+        s = get_config('SERVER_LOGTYPE')
+    server_instance = server.WebSocketServer(('', int(get_config('PORT'))),
+                                             noodlesapp, log=s)
     if AUTO_RELOAD:
         fs_monitor(server_instance)
     server_instance.serve_forever()

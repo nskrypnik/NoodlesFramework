@@ -1,22 +1,22 @@
 """
 Machinery for launching the wsgi server
 """
+import logging
+import os
+import re
+import sys
+import threading
+import time
 from config import URL_RESOLVER, CONTROLLERS, MIDDLEWARES, DEBUG, AUTO_RELOAD
-from gevent import monkey, pywsgi
-from gevent.wsgi import WSGIServer
+
+from gevent import monkey
 from noodles.dispatcher import Dispatcher
-from noodles.geventwebsocket.handler import WebSocketHandler
-from noodles.http import Request, Response, Error500
+from noodles.http import Request, Error500
 from noodles.middleware import AppMiddlewares
 from noodles.utils.mailer import MailMan
 from noodles.websockserver import server
-import logging
-import sys
-import os
-import traceback
-import re
-import time
-import threading
+
+
 monkey.patch_all()
 
 
@@ -43,7 +43,8 @@ def noodlesapp(env, start_response):
         raise Exception('Can\'t find callable for this url path')
     # Callable function must return Respone object
     for middleware in app_middlewares:
-        callable_obj = middleware(callable_obj)  # Hardcoded use of HTTP Session middleware
+        # Hardcoded use of HTTP Session middleware
+        callable_obj = middleware(callable_obj)
     try:
         response = callable_obj()
         return response(env, start_response)
@@ -71,7 +72,6 @@ def restart_program(mp, lck):
     Note: this function does not return. Any cleanup action (like
     saving data) must be done before calling this function."""
     import commands
-    import signal
     print 'deleting pyc'
     rmcmd = 'find %s -iname "*.pyc" -exec rm -rf {} \;' % mp
     st, op = commands.getstatusoutput(rmcmd)
@@ -141,7 +141,6 @@ class Observer(threading.Thread):
     def fcntl_run(self):
         import fcntl
         import signal
-        import threading
         import time
         print 'starting to watch events on %s' % self.mp
         signal.signal(signal.SIGIO, self.handler)
@@ -175,7 +174,8 @@ def startapp():
         s = StringIO.StringIO()
     else:
         s = SERVER_LOGTYPE
-    server_instance = server.WebSocketServer(('', int(PORT)), noodlesapp, log=s)
+    server_instance = server.WebSocketServer(('', int(PORT)), noodlesapp,
+                                             log=s)
     if AUTO_RELOAD:
         fs_monitor(server_instance)
     server_instance.serve_forever()

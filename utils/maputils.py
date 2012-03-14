@@ -2,7 +2,15 @@
 '''
 filedesc: url mapping aux funcs
 '''
+import importlib
 from noodles.templates import Templater
+
+
+def include(map, dst, source):
+    urls = importlib.import_module(source)
+    if urls.routes:
+        map.extend(urls.routes, dst)
+    return map
 
 
 def urlmap(map, url_rules):

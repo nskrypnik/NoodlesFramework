@@ -54,7 +54,9 @@ def index(request, path_info, path, auth=False):
         if type(state) != bool:
             return state
     partial_response = False
-    path_info = path_info.replace('%28', '(').replace('%29', ')').replace('%20', ' ')
+    path_info = path_info.replace('%28', '(')\
+                         .replace('%29', ')')\
+                         .replace('%20', ' ')
     response = BaseResponse()
     # define a file extansion
     base, ext = os.path.splitext(path_info)  # Get the file extansion
@@ -64,7 +66,8 @@ def index(request, path_info, path, auth=False):
     static_file_path = os.path.join(path, path_info)
     # Check if this path exists
     if not os.path.exists(static_file_path):
-        error_msg = "<h1>Error 404</h1> No such file STATIC_ROOT/%s" % path_info
+        error_msg = "<h1>Error 404</h1> No such file STATIC_ROOT/%s"\
+                    % path_info
         logging.debug('not found: %s' % static_file_path)
         return Error404(error_msg)
     # configure response

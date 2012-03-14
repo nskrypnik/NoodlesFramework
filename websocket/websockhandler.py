@@ -2,27 +2,24 @@
 Base handler class is defined from which a web socket channel
 implementation is derived
 """
-from config import WS_CHANNELS, DEBUG, APICONTROLLERS, API_RESOLVER
+import json
+import logging
+import sys
+from config import WS_CHANNELS, DEBUG, APICONTROLLERS
+
+import redis
 from gevent.event import Event
-from noodles.dispatcher import Dispatcher
 from noodles.geventwebsocket.handler import WebSocketHandler
 from noodles.utils import datahandler
 from noodles.utils.mailer import MailMan
-from noodles.utils.structure import Structure
+
 from wssession import WSSession
-import json
-import logging
-import redis
-import sys
 
 
 try:
     from config import ENCODING
 except ImportError:
     ENCODING = 'utf-8'
-
-
-api_resolver = __import__(API_RESOLVER, globals(), locals())
 
 
 class WebSocketSendError(Exception):
@@ -88,7 +85,6 @@ class MultiSocketHandler(WebSocketHandler):
         self.close_event = Event()
         rc = redis.Redis()
         self.sub = rc.pubsub()
-        self.mapper = api_resolver.get_map()
         self.controllers = {}
         for controller in APICONTROLLERS:
             # Import all controllers

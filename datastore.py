@@ -207,6 +207,11 @@ class Model(object):
 
         else:
             raise Exception('unknown action!!!')
+        
+        
+    @classmethod
+    def exists(cls, id, storage=None):  # storage=None for backword capability
+        return RedisConn.exists(mkey(REDIS_NAMESPACE, cls.get_collection_name(), id))
 
 
 class Node(Value):

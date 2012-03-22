@@ -1,6 +1,5 @@
 This is our small web-framework, based on gevents(gevents.org).
 
-
 To start work with it clone it to noodles directory
 
 $ cd noodles_project_dir

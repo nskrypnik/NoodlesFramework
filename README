@@ -13,6 +13,5 @@ $ python runserver.py
 Fail? Just install all necessary libs:
 
 redis-py, webob, routes, mako, gevent
-
 For more detail info see INSTALL...
 

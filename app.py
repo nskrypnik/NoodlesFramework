@@ -7,10 +7,10 @@ import re
 import sys
 import threading
 import time
-from config import URL_RESOLVER, CONTROLLERS, MIDDLEWARES, DEBUG, AUTO_RELOAD
+from config import (URL_RESOLVER, CONTROLLERS, MIDDLEWARES, DEBUG, AUTO_RELOAD,
+                    PORT, SERVER_LOGTYPE)
 
 from gevent import monkey
-from lib.utils import get_config
 from noodles.dispatcher import Dispatcher
 from noodles.http import Request, Error500
 from noodles.middleware import AppMiddlewares
@@ -165,13 +165,13 @@ def fs_monitor(server_instance):
 
 
 def startapp():
-    print 'Start server on %s...' % get_config('PORT')
-    if get_config('SERVER_LOGTYPE') == 'supress':
+    print 'Start server on %s...' % PORT
+    if SERVER_LOGTYPE == 'supress':
         import StringIO
         s = StringIO.StringIO()
     else:
-        s = get_config('SERVER_LOGTYPE')
-    server_instance = server.WebSocketServer(('', int(get_config('PORT'))),
+        s = SERVER_LOGTYPE
+    server_instance = server.WebSocketServer(('', int(PORT)),
                                              noodlesapp, log=s)
     if AUTO_RELOAD:
         fs_monitor(server_instance)

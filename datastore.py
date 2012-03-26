@@ -110,7 +110,7 @@ class Model(object):
             self.__structure__[classname] = {}
             # Specify the collection name
             self.__collection__[classname] = classname.lower() + 's'
-            logging.debug('Creating structure for model %s' % (classname))
+            logging.debug('Creating structure for model %s' % classname)
             # Browse model for properties
             for key in dir(self):
                 if not non_record.match(key):

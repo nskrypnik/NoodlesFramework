@@ -3,19 +3,15 @@
 filedesc: Module for extending webob Request and Response classes
 '''
 # to use in our server application
-
-from mako.template import Template
-
-import webob
 import json
 import logging
-import utils
-#from  utils.datahandler
+from config import ENCODING
 
-try:
-    from config import ENCODING
-except:
-    ENCODING = 'utf-8'
+import webob
+from mako.template import Template
+
+import utils
+
 
 SET_COOKIES = '__set_cookies'
 UNSET_COOKIES = '__unset_cookies'
@@ -110,10 +106,12 @@ class XResponse(BaseResponse):
         # Set and unset cookies
         # Set cookies
         set_cookies_dict = response_dict.get(SET_COOKIES)
-        logging.debug('response_dict2 is %s. Set-cookies dict is %s' % (response_dict, set_cookies_dict))
+        logging.debug('response_dict2 is %s. Set-cookies dict is %s'
+                      % (response_dict, set_cookies_dict))
         if set_cookies_dict:
             for cookie in set_cookies_dict:
-                logging.debug('Try to set cookie %s to value %s' % (cookie, set_cookies_dict[cookie]))
+                logging.debug('Try to set cookie %s to value %s'
+                              % (cookie, set_cookies_dict[cookie]))
                 self.set_cookie(cookie, str(set_cookies_dict[cookie]))
             response_dict.pop(SET_COOKIES)
 

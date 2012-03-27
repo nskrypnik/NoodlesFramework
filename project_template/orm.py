@@ -1,8 +1,7 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import mapper, sessionmaker
 from sqlalchemy import Table, Column, LargeBinary, Float, BigInteger, Integer, String, Unicode, DateTime, Enum, MetaData, ForeignKey, Boolean
 
-from sqlalchemy import select, func
+from sqlalchemy import func
 
 import datetime
 now = datetime.datetime.now

@@ -11,15 +11,18 @@ import copy
 import json
 import os
 import hashlib
+from config import TIME_TO_OVERWRITE_CLIENT_COOKIE
 
 
 def mkey(*params):
-    """return a key composed of the arguments passed, delimeted by colon. for usage with redis"""
+    """
+    return a key composed of the arguments passed, delimeted by colon.
+    for usage with redis
+    """
     rt = ":".join([str(rt) for rt in params])
     return rt
 
 non_record = re.compile(r'__\w+__')
-from config import *
 try:
     from config import REDIS_NAMESPACE
 except ImportError:
@@ -68,7 +71,8 @@ class Value(object):
         try:
             valuedict[self.key] = self.type(value)
         except:
-            logging.info('could not save key %s with value %s as type %s' % (self.key, value, self.type))
+            logging.info('could not save key %s with value %s as type %s'
+                         % (self.key, value, self.type))
             raise
 
 
@@ -87,7 +91,8 @@ class Model(object):
 
     def __init__(self, valuedict=None, embedded=False, expire=None, **kwargs):
 
-        #we might use salt to make our sequence key for this object more interesting
+        # we might use salt to make our sequence key for this object
+        # more interesting
         if 'salt' in kwargs:
             self.__salt__ = kwargs['salt']
         self.expire = expire
@@ -105,7 +110,7 @@ class Model(object):
             self.__structure__[classname] = {}
             # Specify the collection name
             self.__collection__[classname] = classname.lower() + 's'
-            logging.debug('Creating structure for model %s' % (classname))
+            logging.debug('Creating structure for model %s' % classname)
             # Browse model for properties
             for key in dir(self):
                 if not non_record.match(key):
@@ -127,7 +132,8 @@ class Model(object):
                 else:
                     self.__instdict__[k] = kwargs[k]
             else:
-                raise Exception('There is no such value \'%s\' in %s model.' % (k, classname))
+                raise Exception('There is no such value \'%s\' in %s model.'
+                                % (k, classname))
 
     def save(self, storage=None):
         " Save object to redis storage"
@@ -135,23 +141,23 @@ class Model(object):
             logging.warning('You should save embedded objects with high level object')
             return
         if not self.id:
-            new_id = RedisConn.incr(mkey(REDIS_NAMESPACE, self.__class__.__name__.lower() + '_key'))
+            new_id = RedisConn.incr(mkey(REDIS_NAMESPACE,
+                                         self.__class__.__name__.lower() + '_key'))
             if self.__salt__:
                 self.id = hashlib.md5(str(new_id) + self.__salt__).hexdigest()
             else:
                 self.id = new_id
-#        print mkey(REDIS_NAMESPACE, self.collection_name, self.id), json.dumps(self.__instdict__)
-        RedisConn.set(mkey(REDIS_NAMESPACE, self.collection_name, self.id), json.dumps(self.__instdict__))
+        RedisConn.set(mkey(REDIS_NAMESPACE, self.collection_name, self.id),
+                      json.dumps(self.__instdict__))
         if self.expire != None:
-            RedisConn.expire(mkey(REDIS_NAMESPACE, self.collection_name, self.id), self.expire)
-        #self.save_redis_recursive(mkey(self.collection_name, self.id), self.__instdict__)
+            RedisConn.expire(mkey(REDIS_NAMESPACE, self.collection_name,
+                                  self.id), self.expire)
 
     @classmethod
     def get_structure(cls):
         structure = cls.__structure__.get(cls.__name__)
         if not structure:
             # Structure of the class is not created yet
-            cls_inst = cls()
             return cls.__structure__.get(cls.__name__)
         return structure
 
@@ -168,7 +174,7 @@ class Model(object):
         return copy.deepcopy(self.__instdict__)
 
     @classmethod
-    def get(cls, id, storage=None, salt=None):  # storage=None for backword capability
+    def get(cls, id, storage=None, salt=None):
         "Get object from Redis storage by ID"
         if salt:
             idtoget = hashlib.md5(id + salt).hexdigest()
@@ -176,7 +182,8 @@ class Model(object):
             idtoget = id
         # First try to find object by Id
         # example: gameserver:scratchgames:101
-        inst_data = RedisConn.get(mkey(REDIS_NAMESPACE, cls.get_collection_name(), idtoget))
+        inst_data = RedisConn.get(mkey(REDIS_NAMESPACE,
+                                       cls.get_collection_name(), idtoget))
         if not inst_data:  # No objects with such ID
             raise DoesNotExist('No model in Redis srorage with such id')
         else:
@@ -187,11 +194,12 @@ class Model(object):
     @classmethod
     def delete(cls, id, storage=None):  # storage=None for backword capability
         "Delete key specified by ``id``"
-        result = RedisConn.delete(mkey(REDIS_NAMESPACE, cls.get_collection_name(), id))
+        result = RedisConn.delete(mkey(REDIS_NAMESPACE,
+                                       cls.get_collection_name(), id))
         return result
 
     #return flag to update client cookie
-    def update(self, storage=None, **kwargs):  # storage=None for backword capability
+    def update(self, storage=None, **kwargs):
         '''update time expire'''
         print 'updating::'
         id = mkey(REDIS_NAMESPACE, self.collection_name, self.id)
@@ -200,18 +208,19 @@ class Model(object):
             print TIME_TO_OVERWRITE_CLIENT_COOKIE, RedisConn.ttl(id)
             if  TIME_TO_OVERWRITE_CLIENT_COOKIE > RedisConn.ttl(id):
                 result = RedisConn.expire(id, kwargs['expire'])
-                logging.info('UPDATE LIFETIME TO: %s SECONDS' % kwargs['expire'])
+                logging.info('UPDATE LIFETIME TO: %s SECONDS'
+                             % kwargs['expire'])
                 return result
             else:
                 logging.debug('non_update_SESSION')
 
         else:
             raise Exception('unknown action!!!')
-        
-        
+
     @classmethod
     def exists(cls, id, storage=None):  # storage=None for backword capability
-        return RedisConn.exists(mkey(REDIS_NAMESPACE, cls.get_collection_name(), id))
+        return RedisConn.exists(mkey(REDIS_NAMESPACE,
+                                     cls.get_collection_name(), id))
 
 
 class Node(Value):

@@ -4,7 +4,12 @@ Redis connection wrapper which gives a soft error in case that
 noodles is run on a machine without redis
 """
 from gevent.coros import RLock
-from local_config import RDB
+try:
+    from local_config import RDB
+except ImportError:
+    print "You have not set RDB setting, please" \
+        "create local_config.py by analogy of local_config.py.template"
+
 import logging
 
 

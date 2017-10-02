@@ -51,3 +51,9 @@ MAIL_SERVER = 'smtp.example.com'
 MAIL_PORT = 587
 MAIL_LOGIN = 'your smtp mail login'
 MAIL_PASSWORD = 'your smtp mail password'
+
+try:
+    from local_config import TIME_TO_OVERWRITE_CLIENT_COOKIE
+except ImportError:
+    print "You have not set TIME_TO_OVERWRITE_CLIENT_COOKIE setting, please" \
+        "create local_config.py by analogy of local_config.py.template"

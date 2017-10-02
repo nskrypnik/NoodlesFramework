@@ -1,4 +1,6 @@
-gevent
+redis
+sqlalchemy
+gevent==1.0.2
 mako
 webob
 routes
